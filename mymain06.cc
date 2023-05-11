@@ -34,7 +34,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 1000;
+    int N_events = 200000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         // set pythia initialization variables
@@ -89,18 +89,34 @@ int main() {
     }
 
     // Generate histograms from bin tuples
+    // Charm
     TH1F *charmPtTotal = new TH1F("charm_full","Charm Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+
     TH1F *charmPtPart = new TH1F("charm_pt_part","", 35, 0.0, 70.0);
+
     TH1F *charmPtHardest = new TH1F("charm_pt_hardest","", 35, 0.0, 70.0);
+    TH1F *charmPtHardest21 = new TH1F("charm_pt_hardest_21","", 35, 0.0, 70.0);
+    TH1F *charmPtHardest22 = new TH1F("charm_pt_hardest_22","", 35, 0.0, 70.0);
+    TH1F *charmPtHardest23 = new TH1F("charm_pt_hardest_23","", 35, 0.0, 70.0);
+    TH1F *charmPtHardest24 = new TH1F("charm_pt_hardest_24","", 35, 0.0, 70.0);
+
     TH1F *charmPtMPI = new TH1F("charm_pt_mpi","", 35, 0.0, 70.0);
     TH1F *charmPtISS = new TH1F("charm_pt_iss","", 35, 0.0, 70.0);
     TH1F *charmPtFSS = new TH1F("charm_pt_fss","", 35, 0.0, 70.0);
     TH1F *charmPtRemnant = new TH1F("charm_pt_remnant","", 35, 0.0, 70.0);
     TH1F *charmPtHadron = new TH1F("charm_pt_hadron","", 35, 0.0, 70.0);
 
+    // bottom 
     TH1F *bottomPtTotal = new TH1F("bottom_full","Bottom Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+
     TH1F *bottomPtPart = new TH1F("bottom_pt_part","", 35, 0.0, 70.0);
+
     TH1F *bottomPtHardest = new TH1F("bottom_pt_hardest","", 35, 0.0, 70.0);
+    TH1F *bottomPtHardest21 = new TH1F("bottom_pt_hardest_21","", 35, 0.0, 70.0);
+    TH1F *bottomPtHardest22 = new TH1F("bottom_pt_hardest_22","", 35, 0.0, 70.0);
+    TH1F *bottomPtHardest23 = new TH1F("bottom_pt_hardest_23","", 35, 0.0, 70.0);
+    TH1F *bottomPtHardest24 = new TH1F("bottom_pt_hardest_24","", 35, 0.0, 70.0);
+
     TH1F *bottomPtMPI = new TH1F("bottom_pt_mpi","", 35, 0.0, 70.0);
     TH1F *bottomPtISS = new TH1F("bottom_pt_iss","", 35, 0.0, 70.0);
     TH1F *bottomPtFSS = new TH1F("bottom_pt_fss","", 35, 0.0, 70.0);
@@ -114,11 +130,33 @@ int main() {
         charmPtPart->Scale(1/binLuminocity[i], "width");
         charmPtTotal->Add(charmPtPart);
 
+        // hardest
         charmPtPart->Reset();
-        charmTuples[i]->Draw("pt>>charm_pt_part", "status>20 && status<30");
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status>20 && status<25");
         charmPtPart->Scale(1/binLuminocity[i], "width");
         charmPtHardest->Add(charmPtPart);
 
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==21");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtHardest21->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==22");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtHardest22->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==23");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtHardest23->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==24");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtHardest24->Add(charmPtPart);
+
+        // MPI
         charmPtPart->Reset();
         charmTuples[i]->Draw("pt>>charm_pt_part", "status>30 && status<40");
         charmPtPart->Scale(1/binLuminocity[i], "width");
@@ -150,11 +188,33 @@ int main() {
         bottomPtPart->Scale(1/binLuminocity[i], "width");
         bottomPtTotal->Add(bottomPtPart);
 
+        // Hardest
         bottomPtPart->Reset();
         bottomTuples[i]->Draw("pt>>bottom_pt_part", "status>20 && status<30");
         bottomPtPart->Scale(1/binLuminocity[i], "width");
         bottomPtHardest->Add(bottomPtPart);
 
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==21");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtHardest21->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==22");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtHardest22->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==23");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtHardest23->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==24");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtHardest24->Add(bottomPtPart);
+
+        // MPI
         bottomPtPart->Reset();
         bottomTuples[i]->Draw("pt>>bottom_pt_part", "status>30 && status<40");
         bottomPtPart->Scale(1/binLuminocity[i], "width");
@@ -182,6 +242,7 @@ int main() {
     }
 
     //Plotting
+    // Total Cross Section
     TCanvas *canvasTotal = new TCanvas("total_sigma","total_sigma");
 
     hardPt->SetLineColor(1);
@@ -189,6 +250,7 @@ int main() {
 
     canvasTotal->Write();
 
+    // Charm Full
     TCanvas *canvasCharm = new TCanvas("charm_sigma","HF_sigma");
 
     charmPtTotal->SetLineColor(1);
@@ -231,6 +293,40 @@ int main() {
 
     canvasCharm->Write();
 
+    // Charm Hardest
+    TCanvas *canvasCharmHardest = new TCanvas("charm_hardest_sigma","HF_sigma");
+
+    charmPtHardest->SetLineColor(1);
+    charmPtHardest->SetStats(0);
+    charmPtHardest->Draw();
+
+    charmPtHardest21->SetLineColor(2);
+    //charmPtHardest21->SetStats(0);
+    charmPtHardest21->Draw("SAME");
+
+    charmPtHardest22->SetLineColor(3);
+    charmPtHardest22->SetStats(0);
+    charmPtHardest22->Draw("SAME");
+
+    charmPtHardest23->SetLineColor(4);
+    //charmPtHardest23->SetStats(0);
+    charmPtHardest23->Draw("SAME");
+
+    charmPtHardest24->SetLineColor(5);
+    charmPtHardest24->SetStats(0);
+    charmPtHardest24->Draw("SAME");
+
+    auto legendCharmHardest = new TLegend();
+    legendCharmHardest->AddEntry(charmPtHardest,"Hardest Subprocess","l");
+    legendCharmHardest->AddEntry(charmPtHardest21,"21","l");
+    legendCharmHardest->AddEntry(charmPtHardest22,"22","l");
+    legendCharmHardest->AddEntry(charmPtHardest23,"23","l");
+    legendCharmHardest->AddEntry(charmPtHardest24,"24","l");
+    legendCharmHardest->Draw("SAME");
+
+    canvasCharmHardest->Write();
+
+    // Bottom Full
     TCanvas *canvasBottom = new TCanvas("bottom_sigma","HF_sigma");
 
     bottomPtTotal->SetLineColor(1);
@@ -272,6 +368,40 @@ int main() {
     legend3->Draw("SAME");
 
     canvasBottom->Write();
+
+    // Bottom Hardest
+    // Charm Hardest
+    TCanvas *canvasbottomHardest = new TCanvas("bottom_hardest_sigma","HF_sigma");
+
+    bottomPtHardest->SetLineColor(1);
+    bottomPtHardest->SetStats(0);
+    bottomPtHardest->Draw();
+
+    bottomPtHardest21->SetLineColor(2);
+    //bottomPtHardest21->SetStats(0);
+    bottomPtHardest21->Draw("SAME");
+
+    bottomPtHardest22->SetLineColor(3);
+    bottomPtHardest22->SetStats(0);
+    bottomPtHardest22->Draw("SAME");
+
+    bottomPtHardest23->SetLineColor(4);
+    //bottomPtHardest23->SetStats(0);
+    bottomPtHardest23->Draw("SAME");
+
+    bottomPtHardest24->SetLineColor(5);
+    bottomPtHardest24->SetStats(0);
+    bottomPtHardest24->Draw("SAME");
+
+    auto legendbottomHardest = new TLegend();
+    legendbottomHardest->AddEntry(bottomPtHardest,"Hardest Subprocess","l");
+    legendbottomHardest->AddEntry(bottomPtHardest21,"21","l");
+    legendbottomHardest->AddEntry(bottomPtHardest22,"22","l");
+    legendbottomHardest->AddEntry(bottomPtHardest23,"23","l");
+    legendbottomHardest->AddEntry(bottomPtHardest24,"24","l");
+    legendbottomHardest->Draw("SAME");
+
+    canvasbottomHardest->Write();
     
 
     delete outFile;
