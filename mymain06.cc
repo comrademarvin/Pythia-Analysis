@@ -34,7 +34,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 100000;
+    int N_events = 1000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         // set pythia initialization variables
@@ -94,19 +94,24 @@ int main() {
 
     TH1F *charmPtPart = new TH1F("charm_pt_part","", 35, 0.0, 70.0);
 
-    TH1F *charmPtHardest = new TH1F("charm_pt_hardest","", 35, 0.0, 70.0);
+    TH1F *charmPtHardest = new TH1F("charm_pt_hardest","Charm Hardest Subprocess Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
     TH1F *charmPtHardestInc = new TH1F("charm_pt_hardest_inc","", 35, 0.0, 70.0);
     TH1F *charmPtHardestOut = new TH1F("charm_pt_hardest_out","", 35, 0.0, 70.0);
 
-    TH1F *charmPtMPI = new TH1F("charm_pt_mpi","", 35, 0.0, 70.0);
-    TH1F *charmPtMPI31 = new TH1F("charm_pt_mpi_31","", 35, 0.0, 70.0);
-    TH1F *charmPtMPI32 = new TH1F("charm_pt_mpi_32","", 35, 0.0, 70.0);
-    TH1F *charmPtMPI33 = new TH1F("charm_pt_mpi_33","", 35, 0.0, 70.0);
-    TH1F *charmPtMPI34 = new TH1F("charm_pt_mpi_34","", 35, 0.0, 70.0);
+    TH1F *charmPtMPI = new TH1F("charm_pt_mpi","Charm Subsequent Subprocesses (MPI) Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+    TH1F *charmPtMPIInc = new TH1F("charm_pt_mpi_inc","", 35, 0.0, 70.0);
+    TH1F *charmPtMPIOut = new TH1F("charm_pt_mpi_out","", 35, 0.0, 70.0);
 
-    TH1F *charmPtISS = new TH1F("charm_pt_iss","", 35, 0.0, 70.0);
+    TH1F *charmPtISS = new TH1F("charm_pt_iss","Charm Initial-State-Showers Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+    TH1F *charmPtISS41 = new TH1F("charm_pt_iss_41","", 35, 0.0, 70.0);
+    TH1F *charmPtISS42 = new TH1F("charm_pt_iss_42","", 35, 0.0, 70.0);
+    TH1F *charmPtISS43 = new TH1F("charm_pt_iss_43","", 35, 0.0, 70.0);
+    TH1F *charmPtISS44 = new TH1F("charm_pt_iss_44","", 35, 0.0, 70.0);
+
     TH1F *charmPtFSS = new TH1F("charm_pt_fss","", 35, 0.0, 70.0);
+
     TH1F *charmPtRemnant = new TH1F("charm_pt_remnant","", 35, 0.0, 70.0);
+
     TH1F *charmPtHadron = new TH1F("charm_pt_hadron","", 35, 0.0, 70.0);
 
     // bottom 
@@ -114,17 +119,20 @@ int main() {
 
     TH1F *bottomPtPart = new TH1F("bottom_pt_part","", 35, 0.0, 70.0);
 
-    TH1F *bottomPtHardest = new TH1F("bottom_pt_hardest","", 35, 0.0, 70.0);
+    TH1F *bottomPtHardest = new TH1F("bottom_pt_hardest","Bottom Hardest Subprocess Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
     TH1F *bottomPtHardestInc = new TH1F("bottom_pt_hardest_inc","", 35, 0.0, 70.0);
     TH1F *bottomPtHardestOut = new TH1F("bottom_pt_hardest_out","", 35, 0.0, 70.0);
 
-    TH1F *bottomPtMPI = new TH1F("bottom_pt_mpi","", 35, 0.0, 70.0);
-    TH1F *bottomPtMPI31 = new TH1F("bottom_pt_mpi_31","", 35, 0.0, 70.0);
-    TH1F *bottomPtMPI32 = new TH1F("bottom_pt_mpi_32","", 35, 0.0, 70.0);
-    TH1F *bottomPtMPI33 = new TH1F("bottom_pt_mpi_33","", 35, 0.0, 70.0);
-    TH1F *bottomPtMPI34 = new TH1F("bottom_pt_mpi_34","", 35, 0.0, 70.0);
+    TH1F *bottomPtMPI = new TH1F("bottom_pt_mpi","Bottom Subsequent Subprocesses (MPI) Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+    TH1F *bottomPtMPIInc = new TH1F("bottom_pt_mpi_inc","", 35, 0.0, 70.0);
+    TH1F *bottomPtMPIOut = new TH1F("bottom_pt_mpi_out","", 35, 0.0, 70.0);
 
-    TH1F *bottomPtISS = new TH1F("bottom_pt_iss","", 35, 0.0, 70.0);
+    TH1F *bottomPtISS = new TH1F("bottom_pt_iss","Bottom Initial-State-Showers Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+    TH1F *bottomPtISS41 = new TH1F("bottom_pt_iss_41","", 35, 0.0, 70.0);
+    TH1F *bottomPtISS42 = new TH1F("bottom_pt_iss_42","", 35, 0.0, 70.0);
+    TH1F *bottomPtISS43 = new TH1F("bottom_pt_iss_43","", 35, 0.0, 70.0);
+    TH1F *bottomPtISS44 = new TH1F("bottom_pt_iss_44","", 35, 0.0, 70.0);
+
     TH1F *bottomPtFSS = new TH1F("bottom_pt_fss","", 35, 0.0, 70.0);
     TH1F *bottomPtRemnant = new TH1F("bottom_pt_remnant","", 35, 0.0, 70.0);
     TH1F *bottomPtHadron = new TH1F("bottom_pt_hadron","", 35, 0.0, 70.0);
@@ -161,22 +169,12 @@ int main() {
         charmPtPart->Reset();
         charmTuples[i]->Draw("pt>>charm_pt_part", "status==31");
         charmPtPart->Scale(1/binLuminocity[i], "width");
-        charmPtMPI31->Add(charmPtPart);
-
-        charmPtPart->Reset();
-        charmTuples[i]->Draw("pt>>charm_pt_part", "status==32");
-        charmPtPart->Scale(1/binLuminocity[i], "width");
-        charmPtMPI32->Add(charmPtPart);
+        charmPtMPIInc->Add(charmPtPart);
 
         charmPtPart->Reset();
         charmTuples[i]->Draw("pt>>charm_pt_part", "status==33");
         charmPtPart->Scale(1/binLuminocity[i], "width");
-        charmPtMPI33->Add(charmPtPart);
-
-        charmPtPart->Reset();
-        charmTuples[i]->Draw("pt>>charm_pt_part", "status==34");
-        charmPtPart->Scale(1/binLuminocity[i], "width");
-        charmPtMPI34->Add(charmPtPart);
+        charmPtMPIOut->Add(charmPtPart);
 
         // ISS
         charmPtPart->Reset();
@@ -184,6 +182,25 @@ int main() {
         charmPtPart->Scale(1/binLuminocity[i], "width");
         charmPtISS->Add(charmPtPart);
 
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==41");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtISS41->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==42");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtISS42->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==43");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtISS43->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==44");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtISS44->Add(charmPtPart);
 
         // FSS
         charmPtPart->Reset();
@@ -191,6 +208,7 @@ int main() {
         charmPtPart->Scale(1/binLuminocity[i], "width");
         charmPtFSS->Add(charmPtPart);
 
+        // Remnant
         charmPtPart->Reset();
         charmTuples[i]->Draw("pt>>charm_pt_part", "status>60 && status<70");
         charmPtPart->Scale(1/binLuminocity[i], "width");
@@ -232,22 +250,12 @@ int main() {
         bottomPtPart->Reset();
         bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==31");
         bottomPtPart->Scale(1/binLuminocity[i], "width");
-        bottomPtMPI31->Add(bottomPtPart);
-
-        bottomPtPart->Reset();
-        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==32");
-        bottomPtPart->Scale(1/binLuminocity[i], "width");
-        bottomPtMPI32->Add(bottomPtPart);
+        bottomPtMPIInc->Add(bottomPtPart);
 
         bottomPtPart->Reset();
         bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==33");
         bottomPtPart->Scale(1/binLuminocity[i], "width");
-        bottomPtMPI33->Add(bottomPtPart);
-
-        bottomPtPart->Reset();
-        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==34");
-        bottomPtPart->Scale(1/binLuminocity[i], "width");
-        bottomPtMPI34->Add(bottomPtPart);
+        bottomPtMPIOut->Add(bottomPtPart);
 
         // ISS
         bottomPtPart->Reset();
@@ -255,6 +263,25 @@ int main() {
         bottomPtPart->Scale(1/binLuminocity[i], "width");
         bottomPtISS->Add(bottomPtPart);
 
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==41");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtISS41->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==42");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtISS42->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==43");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtISS43->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==44");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtISS44->Add(bottomPtPart);
 
         // FSS
         bottomPtPart->Reset();
@@ -262,6 +289,7 @@ int main() {
         bottomPtPart->Scale(1/binLuminocity[i], "width");
         bottomPtFSS->Add(bottomPtPart);
 
+        // Remnant
         bottomPtPart->Reset();
         bottomTuples[i]->Draw("pt>>bottom_pt_part", "status>60 && status<70");
         bottomPtPart->Scale(1/binLuminocity[i], "width");
@@ -355,31 +383,54 @@ int main() {
     charmPtMPI->SetStats(0);
     charmPtMPI->Draw();
 
-    charmPtMPI31->SetLineColor(2);
-    charmPtMPI31->SetStats(0);
-    charmPtMPI31->Draw("SAME");
+    charmPtMPIInc->SetLineColor(2);
+    charmPtMPIInc->SetStats(0);
+    charmPtMPIInc->Draw("SAME");
 
-    charmPtMPI32->SetLineColor(3);
-    charmPtMPI32->SetStats(0);
-    charmPtMPI32->Draw("SAME");
-
-    charmPtMPI33->SetLineColor(4);
-    charmPtMPI33->SetStats(0);
-    charmPtMPI33->Draw("SAME");
-
-    charmPtMPI34->SetLineColor(5);
-    charmPtMPI34->SetStats(0);
-    charmPtMPI34->Draw("SAME");
+    charmPtMPIOut->SetLineColor(4);
+    charmPtMPIOut->SetStats(0);
+    charmPtMPIOut->Draw("SAME");
 
     auto legendCharmMPI = new TLegend();
     legendCharmMPI->AddEntry(charmPtMPI,"Subsequent Subprocesses","l");
-    legendCharmMPI->AddEntry(charmPtMPI31,"31","l");
-    legendCharmMPI->AddEntry(charmPtMPI32,"32","l");
-    legendCharmMPI->AddEntry(charmPtMPI33,"33","l");
-    legendCharmMPI->AddEntry(charmPtMPI34,"34","l");
+    legendCharmMPI->AddEntry(charmPtMPIInc,"Incoming","l");
+    legendCharmMPI->AddEntry(charmPtMPIOut,"Outgoing","l");
     legendCharmMPI->Draw("SAME");
 
     canvasCharmMPI->Write();
+
+    // ISS
+    TCanvas *canvasCharmISS = new TCanvas("charm_ISS_sigma","HF_sigma");
+
+    charmPtISS->SetLineColor(1);
+    charmPtISS->SetStats(0);
+    charmPtISS->Draw();
+
+    charmPtISS41->SetLineColor(2);
+    charmPtISS41->SetStats(0);
+    charmPtISS41->Draw("SAME");
+
+    charmPtISS42->SetLineColor(3);
+    charmPtISS42->SetStats(0);
+    charmPtISS42->Draw("SAME");
+
+    charmPtISS43->SetLineColor(4);
+    charmPtISS43->SetStats(0);
+    charmPtISS43->Draw("SAME");
+
+    charmPtISS44->SetLineColor(5);
+    charmPtISS44->SetStats(0);
+    charmPtISS44->Draw("SAME");
+
+    auto legendCharmISS = new TLegend();
+    legendCharmISS->AddEntry(charmPtISS,"Initial State Showers","l");
+    legendCharmISS->AddEntry(charmPtISS41,"Incoming Spacelike Main Branch","l");
+    legendCharmISS->AddEntry(charmPtISS42,"Incoming copy of Recoiler","l");
+    legendCharmISS->AddEntry(charmPtISS43,"Outgoing Produced","l");
+    legendCharmISS->AddEntry(charmPtISS44,"Outgoing Shifted","l");
+    legendCharmISS->Draw("SAME");
+
+    canvasCharmISS->Write();
 
     // Bottom Full
     TCanvas *canvasBottom = new TCanvas("bottom_sigma","HF_sigma");
@@ -454,31 +505,54 @@ int main() {
     bottomPtMPI->SetStats(0);
     bottomPtMPI->Draw();
 
-    bottomPtMPI31->SetLineColor(2);
-    bottomPtMPI31->SetStats(0);
-    bottomPtMPI31->Draw("SAME");
+    bottomPtMPIInc->SetLineColor(2);
+    bottomPtMPIInc->SetStats(0);
+    bottomPtMPIInc->Draw("SAME");
 
-    bottomPtMPI32->SetLineColor(3);
-    bottomPtMPI32->SetStats(0);
-    bottomPtMPI32->Draw("SAME");
-
-    bottomPtMPI33->SetLineColor(4);
-    bottomPtMPI33->SetStats(0);
-    bottomPtMPI33->Draw("SAME");
-
-    bottomPtMPI34->SetLineColor(5);
-    bottomPtMPI34->SetStats(0);
-    bottomPtMPI34->Draw("SAME");
+    bottomPtMPIOut->SetLineColor(4);
+    bottomPtMPIOut->SetStats(0);
+    bottomPtMPIOut->Draw("SAME");
 
     auto legendbottomMPI = new TLegend();
     legendbottomMPI->AddEntry(bottomPtMPI,"Subsequent Subprocesses","l");
-    legendbottomMPI->AddEntry(bottomPtMPI31,"31","l");
-    legendbottomMPI->AddEntry(bottomPtMPI32,"32","l");
-    legendbottomMPI->AddEntry(bottomPtMPI33,"33","l");
-    legendbottomMPI->AddEntry(bottomPtMPI34,"34","l");
+    legendbottomMPI->AddEntry(bottomPtMPIInc,"Incoming","l");
+    legendbottomMPI->AddEntry(bottomPtMPIOut,"Outgoing","l");
     legendbottomMPI->Draw("SAME");
 
     canvasBottomMPI->Write();
+
+    // ISS
+    TCanvas *canvasbottomISS = new TCanvas("bottom_ISS_sigma","HF_sigma");
+
+    bottomPtISS->SetLineColor(1);
+    bottomPtISS->SetStats(0);
+    bottomPtISS->Draw();
+
+    bottomPtISS41->SetLineColor(2);
+    bottomPtISS41->SetStats(0);
+    bottomPtISS41->Draw("SAME");
+
+    bottomPtISS42->SetLineColor(3);
+    bottomPtISS42->SetStats(0);
+    bottomPtISS42->Draw("SAME");
+
+    bottomPtISS43->SetLineColor(4);
+    bottomPtISS43->SetStats(0);
+    bottomPtISS43->Draw("SAME");
+
+    bottomPtISS44->SetLineColor(5);
+    bottomPtISS44->SetStats(0);
+    bottomPtISS44->Draw("SAME");
+
+    auto legendbottomISS = new TLegend();
+    legendbottomISS->AddEntry(bottomPtISS,"Initial State Showers","l");
+    legendbottomISS->AddEntry(bottomPtISS41,"Incoming Spacelike Main Branch","l");
+    legendbottomISS->AddEntry(bottomPtISS42,"Incoming copy of Recoiler","l");
+    legendbottomISS->AddEntry(bottomPtISS43,"Outgoing Produced","l");
+    legendbottomISS->AddEntry(bottomPtISS44,"Outgoing Shifted","l");
+    legendbottomISS->Draw("SAME");
+
+    canvasbottomISS->Write();
 
     delete outFile;
 
