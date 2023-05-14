@@ -34,7 +34,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 1000;
+    int N_events = 100000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         // set pythia initialization variables
@@ -108,11 +108,14 @@ int main() {
     TH1F *charmPtISS43 = new TH1F("charm_pt_iss_43","", 35, 0.0, 70.0);
     TH1F *charmPtISS44 = new TH1F("charm_pt_iss_44","", 35, 0.0, 70.0);
 
-    TH1F *charmPtFSS = new TH1F("charm_pt_fss","", 35, 0.0, 70.0);
+    TH1F *charmPtFSS = new TH1F("charm_pt_fss","Charm Final-State-Showers Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+    TH1F *charmPtFSS51 = new TH1F("charm_pt_fss_41","", 35, 0.0, 70.0);
+    TH1F *charmPtFSS52 = new TH1F("charm_pt_fss_42","", 35, 0.0, 70.0);
+    TH1F *charmPtFSS53 = new TH1F("charm_pt_fss_43","", 35, 0.0, 70.0);
 
     TH1F *charmPtRemnant = new TH1F("charm_pt_remnant","", 35, 0.0, 70.0);
 
-    TH1F *charmPtHadron = new TH1F("charm_pt_hadron","", 35, 0.0, 70.0);
+    // TH1F *charmPtHadron = new TH1F("charm_pt_hadron","", 35, 0.0, 70.0);
 
     // bottom 
     TH1F *bottomPtTotal = new TH1F("bottom_full","Bottom Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
@@ -133,9 +136,14 @@ int main() {
     TH1F *bottomPtISS43 = new TH1F("bottom_pt_iss_43","", 35, 0.0, 70.0);
     TH1F *bottomPtISS44 = new TH1F("bottom_pt_iss_44","", 35, 0.0, 70.0);
 
-    TH1F *bottomPtFSS = new TH1F("bottom_pt_fss","", 35, 0.0, 70.0);
+    TH1F *bottomPtFSS = new TH1F("bottom_pt_fss","Bottom Final-State-Showers Cross-Sections;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+    TH1F *bottomPtFSS51 = new TH1F("bottom_pt_fss_41","", 35, 0.0, 70.0);
+    TH1F *bottomPtFSS52 = new TH1F("bottom_pt_fss_42","", 35, 0.0, 70.0);
+    TH1F *bottomPtFSS53 = new TH1F("bottom_pt_fss_43","", 35, 0.0, 70.0);
+
     TH1F *bottomPtRemnant = new TH1F("bottom_pt_remnant","", 35, 0.0, 70.0);
-    TH1F *bottomPtHadron = new TH1F("bottom_pt_hadron","", 35, 0.0, 70.0);
+
+    //TH1F *bottomPtHadron = new TH1F("bottom_pt_hadron","", 35, 0.0, 70.0);
 
     for (int i = 0; i < nBins; ++i) {
         //charm
@@ -208,16 +216,31 @@ int main() {
         charmPtPart->Scale(1/binLuminocity[i], "width");
         charmPtFSS->Add(charmPtPart);
 
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==51");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtFSS51->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==52");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtFSS52->Add(charmPtPart);
+
+        charmPtPart->Reset();
+        charmTuples[i]->Draw("pt>>charm_pt_part", "status==53 || status==54 || status==55");
+        charmPtPart->Scale(1/binLuminocity[i], "width");
+        charmPtFSS53->Add(charmPtPart);
+
         // Remnant
         charmPtPart->Reset();
         charmTuples[i]->Draw("pt>>charm_pt_part", "status>60 && status<70");
         charmPtPart->Scale(1/binLuminocity[i], "width");
         charmPtRemnant->Add(charmPtPart);
 
-        charmPtPart->Reset();
-        charmTuples[i]->Draw("pt>>charm_pt_part", "status>70 && status<80");
-        charmPtPart->Scale(1/binLuminocity[i], "width");
-        charmPtHadron->Add(charmPtPart);
+        // charmPtPart->Reset();
+        // charmTuples[i]->Draw("pt>>charm_pt_part", "status>70 && status<80");
+        // charmPtPart->Scale(1/binLuminocity[i], "width");
+        // charmPtHadron->Add(charmPtPart);
 
         // bottom
         bottomPtPart->Reset();
@@ -289,16 +312,31 @@ int main() {
         bottomPtPart->Scale(1/binLuminocity[i], "width");
         bottomPtFSS->Add(bottomPtPart);
 
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==51");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtFSS51->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==52");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtFSS52->Add(bottomPtPart);
+
+        bottomPtPart->Reset();
+        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status==53 || status==54 || status==55");
+        bottomPtPart->Scale(1/binLuminocity[i], "width");
+        bottomPtFSS53->Add(bottomPtPart);
+
         // Remnant
         bottomPtPart->Reset();
         bottomTuples[i]->Draw("pt>>bottom_pt_part", "status>60 && status<70");
         bottomPtPart->Scale(1/binLuminocity[i], "width");
         bottomPtRemnant->Add(bottomPtPart);
 
-        bottomPtPart->Reset();
-        bottomTuples[i]->Draw("pt>>bottom_pt_part", "status>70 && status<80");
-        bottomPtPart->Scale(1/binLuminocity[i], "width");
-        bottomPtHadron->Add(bottomPtPart);
+        // bottomPtPart->Reset();
+        // bottomTuples[i]->Draw("pt>>bottom_pt_part", "status>70 && status<80");
+        // bottomPtPart->Scale(1/binLuminocity[i], "width");
+        // bottomPtHadron->Add(bottomPtPart);
     }
 
     //Plotting
@@ -337,9 +375,9 @@ int main() {
     charmPtRemnant->SetStats(0);
     charmPtRemnant->Draw("SAME");
 
-    charmPtHadron->SetLineColor(7);
-    charmPtHadron->SetStats(0);
-    charmPtHadron->Draw("SAME");
+    // charmPtHadron->SetLineColor(7);
+    // charmPtHadron->SetStats(0);
+    // charmPtHadron->Draw("SAME");
 
     auto legend2 = new TLegend();
     legend2->AddEntry(charmPtTotal,"Charm Total","l");
@@ -348,7 +386,7 @@ int main() {
     legend2->AddEntry(charmPtISS,"Initial State Showers","l");
     legend2->AddEntry(charmPtFSS,"Final State Showers","l");
     legend2->AddEntry(charmPtRemnant,"Beam Remnants","l");
-    legend2->AddEntry(charmPtHadron,"Hadronization Partons","l");
+    // legend2->AddEntry(charmPtHadron,"Hadronization Partons","l");
     legend2->Draw("SAME");
 
     canvasCharm->Write();
@@ -425,12 +463,40 @@ int main() {
     auto legendCharmISS = new TLegend();
     legendCharmISS->AddEntry(charmPtISS,"Initial State Showers","l");
     legendCharmISS->AddEntry(charmPtISS41,"Incoming Spacelike Main Branch","l");
-    legendCharmISS->AddEntry(charmPtISS42,"Incoming copy of Recoiler","l");
-    legendCharmISS->AddEntry(charmPtISS43,"Outgoing Produced","l");
-    legendCharmISS->AddEntry(charmPtISS44,"Outgoing Shifted","l");
+    legendCharmISS->AddEntry(charmPtISS42,"Incoming Copy of Recoiler","l");
+    legendCharmISS->AddEntry(charmPtISS43,"Outgoing Produced by Branching","l");
+    legendCharmISS->AddEntry(charmPtISS44,"Outgoing Shifted by Branching","l");
     legendCharmISS->Draw("SAME");
 
     canvasCharmISS->Write();
+
+    // FSS
+    TCanvas *canvasCharmFSS = new TCanvas("charm_FSS_sigma","HF_sigma");
+
+    charmPtFSS->SetLineColor(1);
+    charmPtFSS->SetStats(0);
+    charmPtFSS->Draw();
+
+    charmPtFSS51->SetLineColor(2);
+    charmPtFSS51->SetStats(0);
+    charmPtFSS51->Draw("SAME");
+
+    charmPtFSS52->SetLineColor(3);
+    charmPtFSS52->SetStats(0);
+    charmPtFSS52->Draw("SAME");
+
+    charmPtFSS53->SetLineColor(4);
+    charmPtFSS53->SetStats(0);
+    charmPtFSS53->Draw("SAME");
+
+    auto legendCharmFSS = new TLegend();
+    legendCharmFSS->AddEntry(charmPtFSS,"Final State Showers","l");
+    legendCharmFSS->AddEntry(charmPtFSS51,"Outgoing Produced by Branching","l");
+    legendCharmFSS->AddEntry(charmPtFSS52,"Outgoing Copy of Recoiler","l");
+    legendCharmFSS->AddEntry(charmPtFSS53,"Copy of Recoiler","l");
+    legendCharmFSS->Draw("SAME");
+
+    canvasCharmFSS->Write();
 
     // Bottom Full
     TCanvas *canvasBottom = new TCanvas("bottom_sigma","HF_sigma");
@@ -459,9 +525,9 @@ int main() {
     bottomPtRemnant->SetStats(0);
     bottomPtRemnant->Draw("SAME");
 
-    bottomPtHadron->SetLineColor(7);
-    bottomPtHadron->SetStats(0);
-    bottomPtHadron->Draw("SAME");
+    // bottomPtHadron->SetLineColor(7);
+    // bottomPtHadron->SetStats(0);
+    // bottomPtHadron->Draw("SAME");
 
     auto legend3 = new TLegend();
     legend3->AddEntry(bottomPtTotal,"Bottom Total","l");
@@ -470,7 +536,7 @@ int main() {
     legend3->AddEntry(bottomPtISS,"Initial State Showers","l");
     legend3->AddEntry(bottomPtFSS,"Final State Showers","l");
     legend3->AddEntry(bottomPtRemnant,"Beam Remnants","l");
-    legend3->AddEntry(bottomPtHadron,"Hadronization Partons","l");
+    // legend3->AddEntry(bottomPtHadron,"Hadronization Partons","l");
     legend3->Draw("SAME");
 
     canvasBottom->Write();
@@ -547,12 +613,40 @@ int main() {
     auto legendbottomISS = new TLegend();
     legendbottomISS->AddEntry(bottomPtISS,"Initial State Showers","l");
     legendbottomISS->AddEntry(bottomPtISS41,"Incoming Spacelike Main Branch","l");
-    legendbottomISS->AddEntry(bottomPtISS42,"Incoming copy of Recoiler","l");
-    legendbottomISS->AddEntry(bottomPtISS43,"Outgoing Produced","l");
-    legendbottomISS->AddEntry(bottomPtISS44,"Outgoing Shifted","l");
+    legendbottomISS->AddEntry(bottomPtISS42,"Incoming Copy of Recoiler","l");
+    legendbottomISS->AddEntry(bottomPtISS43,"Outgoing Produced by Branching","l");
+    legendbottomISS->AddEntry(bottomPtISS44,"Outgoing Shifted by Branching","l");
     legendbottomISS->Draw("SAME");
 
     canvasbottomISS->Write();
+
+    // FSS
+    TCanvas *canvasbottomFSS = new TCanvas("bottom_FSS_sigma","HF_sigma");
+
+    bottomPtFSS->SetLineColor(1);
+    bottomPtFSS->SetStats(0);
+    bottomPtFSS->Draw();
+
+    bottomPtFSS51->SetLineColor(2);
+    bottomPtFSS51->SetStats(0);
+    bottomPtFSS51->Draw("SAME");
+
+    bottomPtFSS52->SetLineColor(3);
+    bottomPtFSS52->SetStats(0);
+    bottomPtFSS52->Draw("SAME");
+
+    bottomPtFSS53->SetLineColor(4);
+    bottomPtFSS53->SetStats(0);
+    bottomPtFSS53->Draw("SAME");
+
+    auto legendbottomFSS = new TLegend();
+    legendbottomFSS->AddEntry(bottomPtFSS,"Final State Showers","l");
+    legendbottomFSS->AddEntry(bottomPtFSS51,"Outgoing Produced by Branching","l");
+    legendbottomFSS->AddEntry(bottomPtFSS52,"Outgoing Copy of Recoiler","l");
+    legendbottomFSS->AddEntry(bottomPtFSS53,"Copy of Recoiler","l");
+    legendbottomFSS->Draw("SAME");
+
+    canvasbottomFSS->Write();
 
     delete outFile;
 
