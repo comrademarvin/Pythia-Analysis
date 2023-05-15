@@ -34,7 +34,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 100000;
+    int N_events = 200000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         // set pythia initialization variables
