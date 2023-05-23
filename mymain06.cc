@@ -9,15 +9,29 @@
 using namespace Pythia8;
 
 int main() {
+    // Turn SoftQCD on/off
+    bool softQCD = true;
+
+    // Pythia object
     Pythia pythia;
 
     // ROOT file for histograms
     TFile* outFile = new TFile("mymain06.root", "RECREATE");
 
     // pTHat bins
-    int nBins = 4;
-    double binEdges[nBins+1] = {16.0, 26.0, 36.0, 50.0, 70.0};
-    double binLuminocity[nBins];
+    int nBins;
+    const double* binEdges;
+    if (softQCD) {
+        nBins = 6;
+        static const double tempArray[7] = {0.0, 8.0, 16.0, 26.0, 36.0, 50.0, 70.0};
+        binEdges = &tempArray[0];
+    } else {
+        nBins = 4;
+        static const double tempArray[5] = {16.0, 26.0, 36.0, 50.0, 70.0};
+        binEdges = &tempArray[0];
+    }
+
+    double binLuminocity[nBins]; // luminocity from generated process sigma to calculate cross-sections
 
     // Histograms
     // Total Cross Section
@@ -34,19 +48,23 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 200000;
+    int N_events = 100000;
 
+    // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
-        // set pythia initialization variables
-        pythia.readString("HardQCD:all = on");
-        // pythia.readString("HardQCD:hardccbar = on");
-        // pythia.readString("HardQCD:hardbbbar = on");
-        pythia.readString("SoftQCD:nonDiffractive = off");
+        if (softQCD && iBin < 2) {
+            pythia.readString("HardQCD:all = off");
+            pythia.readString("SoftQCD:nonDiffractive = on");
+        } else {
+            // set pythia initialization variables
+            pythia.readString("HardQCD:all = on");
+            // pythia.readString("HardQCD:hardccbar = on");
+            // pythia.readString("HardQCD:hardbbbar = on");
+            pythia.readString("SoftQCD:nonDiffractive = off");
+        }
 
         pythia.readString("Beams:eCM = 5020.");
         pythia.readString("Tune:pp = 14");
-        pythia.readString("411:onMode=off");
-        pythia.readString("411:onIfAny=13");
         pythia.readString("411:onMode=off");
         pythia.readString("411:onIfAny=13");
         pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
@@ -59,6 +77,10 @@ int main() {
             if (!pythia.next()) continue;
 
             double pTHat  = pythia.info.pTHat();
+
+            if (softQCD && iBin < 2 && pythia.info.isNonDiffractive()
+            && pTHat > binEdges[iBin+1]) continue;
+
             if (pTHat < binEdges[iBin]) continue;
 
             hardPtPart->Fill(pTHat);
