@@ -49,6 +49,7 @@ int muonDecay(int index, Pythia8::Event eventObj) {
     if (abs(eventObj[index].id()) == 13) return index;
 
     for (int daughterIndex: eventObj[index].daughterList()) {
+        if (eventObj[daughterIndex].isGluon()) return -1;
         int returnIndex = muonDecay(daughterIndex, eventObj);
         if (returnIndex != -1) return returnIndex;
     }
@@ -58,7 +59,7 @@ int muonDecay(int index, Pythia8::Event eventObj) {
 
 int main() {
     // Turn SoftQCD on/off
-    bool softQCD = true;
+    bool softQCD = false;
 
     // Pythia object
     Pythia pythia;
@@ -98,7 +99,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 1000;
+    int N_events = 2000;
 
     // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
@@ -107,16 +108,16 @@ int main() {
             pythia.readString("SoftQCD:nonDiffractive = on");
         } else {
             // set pythia initialization variables
-            pythia.readString("HardQCD:all = on");
-            // pythia.readString("HardQCD:hardccbar = on");
-            // pythia.readString("HardQCD:hardbbbar = on");
+            //pythia.readString("HardQCD:all = on");
+            pythia.readString("HardQCD:hardccbar = on");
+            pythia.readString("HardQCD:hardbbbar = on");
             pythia.readString("SoftQCD:nonDiffractive = off");
         }
 
         pythia.readString("Beams:eCM = 5020.");
         pythia.readString("Tune:pp = 14");
-        pythia.readString("411:onMode=off");
-        pythia.readString("411:onIfAny=13");
+        // pythia.readString("411:onMode=off");
+        // pythia.readString("411:onIfAny=13");
         pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
         pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
         pythia.init();
@@ -143,16 +144,22 @@ int main() {
                 if (particleID == 4) { // charm
                     if (particleStatus == 23 || particleStatus == 33 || particleStatus == 43) { // || particleStatus == 51) {
                         charmTuples[iBin]->Fill(particlePt, particleStatus);
-                        decayStatusDaughters(i, pythia.event);
-                        cout << endl;
+                        int muonIndex = muonDecay(i, pythia.event);
+                        if (muonIndex != -1) {
+                            decayStatusDaughters(i, pythia.event);
+                            cout << endl;
+                        }
                     }
                 }
 
                 if (particleID == 5) { // bottom
                     if (particleStatus == 23 || particleStatus == 33 || particleStatus == 43) { // || particleStatus == 51) {
                         bottomTuples[iBin]->Fill(particlePt, particleStatus);
-                        decayStatusDaughters(i, pythia.event);
-                        cout << endl;
+                        int muonIndex = muonDecay(i, pythia.event);
+                        if (muonIndex != -1) {
+                            decayStatusDaughters(i, pythia.event);
+                            cout << endl;
+                        }
                     }
                 }
             }
