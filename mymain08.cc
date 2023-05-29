@@ -10,8 +10,13 @@ using namespace Pythia8;
 
 // Prints condensed version of particle mother-tree
 void decayStatus(int particleIndex, Pythia8::Event eventObj, int decayLevel = 0) {
-    if (particleIndex != 0) {  
-        cout << decayLevel << " " << eventObj[particleIndex].name() << " (" << particleIndex << ", " << eventObj[particleIndex].id() << ", " << eventObj[particleIndex].status() << ")" << ":";  
+    if (particleIndex != 0) {
+        if (decayLevel == 0) {
+            cout << decayLevel << " ==== " << eventObj[particleIndex].name() << " (" << particleIndex << ", " << eventObj[particleIndex].id() << ", " << eventObj[particleIndex].status() << ")" << ":";
+        } else {
+            cout << decayLevel << " " << eventObj[particleIndex].name() << " (" << particleIndex << ", " << eventObj[particleIndex].id() << ", " << eventObj[particleIndex].status() << ")" << ":";
+        }
+
         for (int momIndex: eventObj[particleIndex].motherList()) {
             cout << " " << eventObj[momIndex].name() << " (" << momIndex << ", " << eventObj[momIndex].id() << ", " << eventObj[momIndex].status() << ")";
         }
@@ -29,7 +34,12 @@ void decayStatus(int particleIndex, Pythia8::Event eventObj, int decayLevel = 0)
 // Prints condensed version of particle daughter-tree
 void decayStatusDaughters(int particleIndex, Pythia8::Event eventObj, int decayLevel = 0) {
     if (particleIndex != 0) {  
-        cout << decayLevel << " " << eventObj[particleIndex].name() << " (" << particleIndex << ", " << eventObj[particleIndex].id() << ", " << eventObj[particleIndex].status() << ")" << ":";  
+        if (decayLevel == 0) {
+            cout << decayLevel << " ==== " << eventObj[particleIndex].name() << " (" << particleIndex << ", " << eventObj[particleIndex].id() << ", " << eventObj[particleIndex].status() << ")" << ":";
+        } else {
+            cout << decayLevel << " " << eventObj[particleIndex].name() << " (" << particleIndex << ", " << eventObj[particleIndex].id() << ", " << eventObj[particleIndex].status() << ")" << ":";
+        }
+
         for (int daughterIndex: eventObj[particleIndex].daughterList()) {
             cout << " " << eventObj[daughterIndex].name() << " (" << daughterIndex << ", " << eventObj[daughterIndex].id() << ", " << eventObj[daughterIndex].status() << ")";
         }
@@ -99,7 +109,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 2000;
+    int N_events = 10000;
 
     // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
@@ -142,26 +152,46 @@ int main() {
                 int particlePt = pythia.event[i].pT();
 
                 if (particleID == 4) { // charm
-                    if (particleStatus == 23 || particleStatus == 33 || particleStatus == 43) { // || particleStatus == 51) {
+                    if (particleStatus == 33) { // || particleStatus == 33 || particleStatus == 43) { // || particleStatus == 51) {
                         charmTuples[iBin]->Fill(particlePt, particleStatus);
-                        int muonIndex = muonDecay(i, pythia.event);
-                        if (muonIndex != -1) {
-                            decayStatusDaughters(i, pythia.event);
-                            cout << endl;
-                        }
+                        // decayStatus(i, pythia.event);
+                        // decayStatusDaughters(i, pythia.event);
+                        // cout << endl;
+                        // int muonIndex = muonDecay(i, pythia.event);
+                        // if (muonIndex != -1) {
+                        //     decayStatusDaughters(i, pythia.event);
+                        //     cout << endl;
+                        // }
                     }
                 }
 
                 if (particleID == 5) { // bottom
-                    if (particleStatus == 23 || particleStatus == 33 || particleStatus == 43) { // || particleStatus == 51) {
+                    if (particleStatus == 33) { // || particleStatus == 33 || particleStatus == 43) { // || particleStatus == 51) {
                         bottomTuples[iBin]->Fill(particlePt, particleStatus);
-                        int muonIndex = muonDecay(i, pythia.event);
-                        if (muonIndex != -1) {
-                            decayStatusDaughters(i, pythia.event);
-                            cout << endl;
-                        }
+                        // decayStatus(i, pythia.event);
+                        // decayStatusDaughters(i, pythia.event);
+                        // cout << endl;
+                        // int muonIndex = muonDecay(i, pythia.event);
+                        // if (muonIndex != -1) {
+                        //     decayStatusDaughters(i, pythia.event);
+                        //     cout << endl;
+                        // }
                     }
                 }
+
+                if (particleID == 24) { // W boson
+                    decayStatus(i, pythia.event);
+                    decayStatusDaughters(i, pythia.event);
+                    cout << endl;
+                }
+
+                // if (particleID == 21) { // gluons
+                //     if (particleStatus == 43) {
+                //         decayStatus(i, pythia.event);
+                //         decayStatusDaughters(i, pythia.event);
+                //         cout << endl;
+                //     }
+                // }
             }
         }
 
