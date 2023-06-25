@@ -69,7 +69,7 @@ int muonDecay(int index, Pythia8::Event eventObj) {
 
 int main() {
     // Turn SoftQCD on/off
-    bool softQCD = true;
+    bool softQCD = false;
 
     // Pythia object
     Pythia pythia;
@@ -81,12 +81,12 @@ int main() {
     int nBins;
     const double* binEdges;
     if (softQCD) {
-        nBins = 6;
-        static const double tempArray[7] = {0.0, 8.0, 16.0, 26.0, 36.0, 50.0, 70.0};
+        nBins = 7;
+        static const double tempArray[8] = {0.0, 8.0, 16.0, 26.0, 36.0, 50.0, 70.0, 100.0};
         binEdges = &tempArray[0];
     } else {
-        nBins = 4;
-        static const double tempArray[5] = {16.0, 26.0, 36.0, 50.0, 70.0};
+        nBins = 5;
+        static const double tempArray[6] = {16.0, 26.0, 36.0, 50.0, 70.0, 100.0};
         binEdges = &tempArray[0];
     }
 
@@ -94,8 +94,8 @@ int main() {
 
     // Histograms
     // Total Cross Section
-    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 70, 0.0, 70.0);
-    TH1F *hardPtPart = new TH1F("hardQCD_part","", 70, 0.0, 70.0);
+    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 100, 0.0, 100.0);
+    TH1F *hardPtPart = new TH1F("hardQCD_part","", 100, 0.0, 100.0);
 
     // HF Cross Sections
     vector<TNtuple*> charmTuples(nBins);
@@ -105,11 +105,11 @@ int main() {
     for (int i = 0; i < nBins; ++i) {
         charmTuples[i] = new TNtuple("charm", "charm", "pt:status");
         bottomTuples[i] = new TNtuple("bottom", "bottom", "pt:status");
-        muonTuples[i] = new TNtuple("muon", "muon", "pt:decay:hfParent");
+        muonTuples[i] = new TNtuple("muon", "muon", "pt:hadron");
     }
 
     // Number of events to generate per bin.
-    int N_events = 1000;
+    int N_events = 1;
 
     // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
@@ -118,9 +118,9 @@ int main() {
             pythia.readString("SoftQCD:nonDiffractive = on");
         } else {
             // set pythia initialization variables
-            pythia.readString("HardQCD:all = on");
-            // pythia.readString("HardQCD:hardccbar = on");
-            // pythia.readString("HardQCD:hardbbbar = on");
+            //pythia.readString("HardQCD:all = on");
+            pythia.readString("HardQCD:hardccbar = on");
+            pythia.readString("HardQCD:hardbbbar = on");
             pythia.readString("SoftQCD:nonDiffractive = off");
         }
 
@@ -145,6 +145,8 @@ int main() {
             if (pTHat < binEdges[iBin]) continue;
 
             hardPtPart->Fill(pTHat);
+
+            cout << "====START OF NEW EVENT====" << endl;
 
             for (int i = 0; i < pythia.event.size(); ++i) {
                 int particleID = abs(pythia.event[i].id());
@@ -171,13 +173,26 @@ int main() {
                         //decayStatus(i, pythia.event);
                         // decayStatusDaughters(i, pythia.event);
                         // cout << endl;
-                        int muonIndex = muonDecay(i, pythia.event);
-                        if (muonIndex != -1) {
-                            decayStatusDaughters(i, pythia.event);
-                            cout << endl;
-                        }
+                        // int muonIndex = muonDecay(i, pythia.event);
+                        // if (muonIndex != -1) {
+                        //     decayStatusDaughters(i, pythia.event);
+                        //     cout << endl;
+                        // }
                     }
                 }
+
+                if (particleID == 13) { // muon
+                    int hadronMotherIndex = (pythia.event[i].motherList())[0];
+                    int hadronMotherID = abs(pythia.event[hadronMotherIndex].id());
+                    
+                    muonTuples[iBin]->Fill(particlePt, hadronMotherID);
+                    //cout << pythia.event[hadronMotherIndex].name() << endl;
+
+                    // decayStatus(i, pythia.event);
+                    // cout << endl;   
+                }
+
+                pythia.event.list(true);
 
                 // if (particleID == 24) { // W boson
                 //     decayStatus(i, pythia.event);
@@ -207,12 +222,21 @@ int main() {
 
     // Generate histograms from bin tuples
     // Charm
-    TH1F *charmPtTotal = new TH1F("charm_full","Produced Charm Cross-Section;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
-    TH1F *charmPtPart = new TH1F("charm_pt_part","", 35, 0.0, 70.0);
+    TH1F *charmPtTotal = new TH1F("charm_full","Produced Charm Cross-Section;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 50, 0.0, 100.0);
+    TH1F *charmPtPart = new TH1F("charm_pt_part","", 50, 0.0, 100.0);
 
     // bottom 
-    TH1F *bottomPtTotal = new TH1F("bottom_full","Produced Bottom Cross-Section;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
-    TH1F *bottomPtPart = new TH1F("bottom_pt_part","", 35, 0.0, 70.0);
+    TH1F *bottomPtTotal = new TH1F("bottom_full","Produced Bottom Cross-Section;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 50, 0.0, 100.0);
+    TH1F *bottomPtPart = new TH1F("bottom_pt_part","", 50, 0.0, 100.0);
+
+    // muon
+    TH1F *muonPtTotal = new TH1F("muon_full","Produced Muon Cross-Section;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 35, 0.0, 70.0);
+    TH1F *muonPtPart = new TH1F("muon_pt_part","", 35, 0.0, 70.0);
+
+    TH1F *muonPtD = new TH1F("muon_pt_D","", 35, 0.0, 70.0);
+    TH1F *muonPtB = new TH1F("muon_pt_B","", 35, 0.0, 70.0);
+    TH1F *muonPtTau = new TH1F("muon_pt_tau","", 35, 0.0, 70.0);
+    TH1F *muonPtOnium = new TH1F("muon_pt_onium","", 35, 0.0, 70.0);
 
     for (int i = 0; i < nBins; ++i) {
         //charm
@@ -226,6 +250,32 @@ int main() {
         bottomTuples[i]->Draw("pt>>bottom_pt_part", "status == 23");
         bottomPtPart->Scale(1/binLuminocity[i], "width");
         bottomPtTotal->Add(bottomPtPart);
+
+        //muon
+        muonPtPart->Reset();
+        muonTuples[i]->Draw("pt>>muon_pt_part");
+        muonPtPart->Scale(1/binLuminocity[i], "width");
+        muonPtTotal->Add(muonPtPart);
+
+        muonPtPart->Reset();
+        muonTuples[i]->Draw("pt>>muon_pt_part", "hadron >= 411 && hadron <= 435");
+        muonPtPart->Scale(1/binLuminocity[i], "width");
+        muonPtD->Add(muonPtPart);
+
+        muonPtPart->Reset();
+        muonTuples[i]->Draw("pt>>muon_pt_part", "hadron >= 511 && hadron <= 545");
+        muonPtPart->Scale(1/binLuminocity[i], "width");
+        muonPtB->Add(muonPtPart);
+
+        muonPtPart->Reset();
+        muonTuples[i]->Draw("pt>>muon_pt_part", "hadron == 15");
+        muonPtPart->Scale(1/binLuminocity[i], "width");
+        muonPtTau->Add(muonPtPart);
+
+        muonPtPart->Reset();
+        muonTuples[i]->Draw("pt>>muon_pt_part", "hadron == 443 || hadron == 553");
+        muonPtPart->Scale(1/binLuminocity[i], "width");
+        muonPtOnium->Add(muonPtPart);
     }
 
     //Plotting
@@ -254,6 +304,39 @@ int main() {
     legendHF->Draw("SAME");
 
     canvasHF->Write();
+
+    // Output Muons
+    TCanvas *canvasMuon = new TCanvas("Muon_sigma","Muon_sigma");
+
+    muonPtTotal->SetLineColor(1);
+    //muonPtTotal->SetStats(0);
+    muonPtTotal->Draw();
+
+    muonPtD->SetLineColor(2);
+    muonPtD->SetStats(0);
+    muonPtD->Draw("SAME");
+
+    muonPtB->SetLineColor(3);
+    muonPtB->SetStats(0);
+    muonPtB->Draw("SAME");
+
+    muonPtTau->SetLineColor(4);
+    muonPtTau->SetStats(0);
+    muonPtTau->Draw("SAME");
+
+    muonPtOnium->SetLineColor(6);
+    muonPtOnium->SetStats(0);
+    muonPtOnium->Draw("SAME");
+
+    auto legendMuon = new TLegend();
+    legendMuon->AddEntry(muonPtTotal,"Total #mu yield","l");
+    legendMuon->AddEntry(muonPtD,"D->#mu","l");
+    legendMuon->AddEntry(muonPtB,"B->#mu","l");
+    legendMuon->AddEntry(muonPtTau,"#tau->#mu","l");
+    legendMuon->AddEntry(muonPtOnium,"J/#psi,#Upsilon->#mu","l");
+    legendMuon->Draw("SAME");
+
+    canvasMuon->Write();
 
     delete outFile;
 
