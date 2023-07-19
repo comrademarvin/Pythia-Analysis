@@ -69,7 +69,7 @@ int muonDecay(int index, Pythia8::Event eventObj) {
 
 int main() {
     // Turn SoftQCD on/off
-    bool softQCD = false;
+    bool softQCD = true;
 
     // Pythia object
     Pythia pythia;
@@ -118,9 +118,9 @@ int main() {
             pythia.readString("SoftQCD:nonDiffractive = on");
         } else {
             // set pythia initialization variables
-            //pythia.readString("HardQCD:all = on");
-            pythia.readString("HardQCD:hardccbar = on");
-            pythia.readString("HardQCD:hardbbbar = on");
+            pythia.readString("HardQCD:all = on");
+            // pythia.readString("HardQCD:hardccbar = on");
+            // pythia.readString("HardQCD:hardbbbar = on");
             pythia.readString("SoftQCD:nonDiffractive = off");
         }
 

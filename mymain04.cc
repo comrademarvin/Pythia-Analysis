@@ -11,7 +11,7 @@ using namespace Pythia8;
 int main() {
     // Hard QCD
     Pythia pythiaHard;
-    pythiaHard.readString("Beams:eCM = 1000.");
+    pythiaHard.readString("Beams:eCM = 13700.");
     pythiaHard.readString("Tune:pp = 14");
     pythiaHard.readString("HardQCD:all = on");
     pythiaHard.readString("SoftQCD:nonDiffractive = off");
@@ -19,7 +19,7 @@ int main() {
 
     // Soft QCD
     Pythia pythiaSoft;
-    pythiaSoft.readString("Beams:eCM = 1000.");
+    pythiaSoft.readString("Beams:eCM = 13700.");
     pythiaSoft.readString("Tune:pp = 14");
     pythiaSoft.readString("HardQCD:all = off");
     pythiaSoft.readString("SoftQCD:nonDiffractive = on");
@@ -32,7 +32,7 @@ int main() {
     TNtuple* hardestHardQCD = new TNtuple("hardQCD", "hardQCD", "pTHat:thetaHat:phiHat");
     TNtuple* hardestSoftQCD = new TNtuple("softQCD", "softQCD", "pTHat:thetaHat:phiHat");
 
-    int N_events = 2000000;
+    int N_events = 200000;
 
     for (int iEvent = 0; iEvent < N_events; ++iEvent) {
         if (!pythiaHard.next()) continue;
