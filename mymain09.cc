@@ -43,11 +43,13 @@ int main() {
     vector<TNtuple*> muonTuples(nBins);
 
     for (int i = 0; i < nBins; ++i) {
-        muonTuples[i] = new TNtuple(Form("muon%d", i), "muon", "pt:y:decayStatus:firstMother:lastMother"); // see definition of decayStaus below
+        muonTuples[i] = new TNtuple(Form("muon%d", i), "muon", "binTag:eventTag:pt:y:eta:decayStatus:firstMother:lastMother"); // see definition of decayStaus below
     }
 
     // Number of events to generate per bin.
-    int N_events = 10000;
+    int N_events = 100000;
+
+    vector<int> multiplicities(nBins*N_events); // luminocity from generated process sigma to calculate cross-sections
 
     // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
@@ -73,6 +75,8 @@ int main() {
         hardPtPart->Reset();
 
         for (int iEvent = 0; iEvent < N_events; ++iEvent) {
+            multiplicities[(iBin*N_events) + iEvent] = -1;
+
             if (!pythia.next()) continue;
 
             double pTHat  = pythia.info.pTHat();
@@ -84,13 +88,18 @@ int main() {
 
             hardPtPart->Fill(pTHat);
 
+            int multCount = 0;
+
             //cout << "====START OF NEW EVENT====" << endl;
 
             for (int i = 0; i < pythia.event.size(); ++i) {
+                if (pythia.event[i].isFinal() && pythia.event[i].isCharged()) multCount++;
+
                 int particleID = abs(pythia.event[i].id());
                 int particleStatus = abs(pythia.event[i].status());
-                int particlePt = pythia.event[i].pT();
-                int particleRapidity = pythia.event[i].y();
+                double particlePt = pythia.event[i].pT();
+                double particleRapidity = pythia.event[i].y();
+                double particlePseudorapidity = pythia.event[i].eta();
 
                 if (particleID == 13) { // muon
                     int motherIndex = pythia.event[i].mother1();
@@ -158,11 +167,11 @@ int main() {
                         cout << decayOutput << endl;
                     }
 
-                    muonTuples[iBin]->Fill(particlePt, particleRapidity, decayStatusTemp, firstMotherID, lastMotherID);
+                    muonTuples[iBin]->Fill(iBin, iEvent, particlePt, particleRapidity, particlePseudorapidity, decayStatusTemp, firstMotherID, lastMotherID);
                 }
-
-                //pythia.event.list(true);
             }
+
+            multiplicities[(iBin*N_events) + iEvent] = multCount;
         }
 
         // cross-section for the bin
@@ -183,6 +192,7 @@ int main() {
     }
 
     outFile->WriteObject(&binLuminocity, "luminocity");
+    outFile->WriteObject(&multiplicities, "multiplicity");
 
     delete outFile;
 
