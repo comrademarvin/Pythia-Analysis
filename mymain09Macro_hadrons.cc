@@ -4,7 +4,7 @@
 #include <TNtuple.h>
 
 void mymain09Macro_hadrons() {
-    TFile *infile = TFile::Open("results/mymain09_v1_500k.root", "READ");
+    TFile *infile = TFile::Open("mymain09.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
