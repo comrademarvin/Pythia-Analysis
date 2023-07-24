@@ -3,21 +3,21 @@
 #include "TCanvas.h"
 #include <TNtuple.h>
 
-void mymain09Macro() {
-    TFile *infile = TFile::Open("mymain09.root", "READ");
+void mymain09Macro_hadrons() {
+    TFile *infile = TFile::Open("results/mymain09_v1_500k.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
 
-    TH1F *muonPtTotal = new TH1F("muon_full","Produced Muon Cross-Section;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 40, 0.0, 80.0);
-    TH1F *muonPtPart = new TH1F("muon_pt_part","", 40, 0.0, 80.0);
+    TH1F *muonPtTotal = new TH1F("muon_full","Produced Muon Cross-Section;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 80, 0.0, 80.0);
+    TH1F *muonPtPart = new TH1F("muon_pt_part","", 80, 0.0, 80.0);
 
-    TH1F *muonPtD = new TH1F("muon_pt_D","", 40, 0.0, 80.0);
-    TH1F *muonPtB = new TH1F("muon_pt_B","", 40, 0.0, 80.0);
-    TH1F *muonPtBD = new TH1F("muon_pt_BD","", 40, 0.0, 80.0);
-    TH1F *muonPtBaryon = new TH1F("muon_pt_baryon","", 40, 0.0, 80.0);
-    TH1F *muonPtOnium = new TH1F("muon_pt_onium","", 40, 0.0, 80.0);
-    TH1F *muonPtTau = new TH1F("muon_pt_tau","", 40, 0.0, 80.0);
+    TH1F *muonPtD = new TH1F("muon_pt_D","", 80, 0.0, 80.0);
+    TH1F *muonPtB = new TH1F("muon_pt_B","", 80, 0.0, 80.0);
+    TH1F *muonPtBD = new TH1F("muon_pt_BD","", 80, 0.0, 80.0);
+    TH1F *muonPtBaryon = new TH1F("muon_pt_baryon","", 80, 0.0, 80.0);
+    TH1F *muonPtOnium = new TH1F("muon_pt_onium","", 80, 0.0, 80.0);
+    TH1F *muonPtTau = new TH1F("muon_pt_tau","", 80, 0.0, 80.0);
 
     int iBin = 0;
     for(std::vector<double>::iterator it = binLuminocity->begin(); it != binLuminocity->end(); ++it) {
@@ -61,7 +61,7 @@ void mymain09Macro() {
         iBin++;
     }
 
-    TFile* outFile = new TFile("mymain09Hist.root", "RECREATE");
+    TFile* outFile = new TFile("mymain09Hist_hadrons.root", "RECREATE");
 
     // Decay Status Contributions
     TCanvas *canvasMuon = new TCanvas("Muon_sigma","Muon_sigma");
