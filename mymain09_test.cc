@@ -17,7 +17,7 @@ int main() {
     Pythia pythia;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain09.root", "RECREATE");
+    TFile* outFile = new TFile("mymain09_test.root", "RECREATE");
 
     // pTHat bins
     int nBins;
@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 10000;
+    int N_events = 500000;
 
     //vector<int> multiplicities(nBins*N_events); // luminocity from generated process sigma to calculate cross-sections
 
