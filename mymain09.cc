@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 100000;
+    int N_events = 500000;
 
     vector<int> multiplicities(nBins*N_events); // luminocity from generated process sigma to calculate cross-sections
 
@@ -74,6 +74,8 @@ int main() {
 
         hardPtPart->Reset();
 
+        int eventCount = 0;
+
         for (int iEvent = 0; iEvent < N_events; ++iEvent) {
             multiplicities[(iBin*N_events) + iEvent] = -1;
 
@@ -85,6 +87,8 @@ int main() {
             && pTHat > binEdges[iBin+1]) continue;
 
             if (pTHat < binEdges[iBin]) continue;
+
+            eventCount++;
 
             hardPtPart->Fill(pTHat);
 
