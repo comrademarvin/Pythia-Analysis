@@ -4,7 +4,7 @@
 #include <TNtuple.h>
 
 void mymain09Macro_hadrons() {
-    TFile *infile = TFile::Open("mymain09.root", "READ");
+    TFile *infile = TFile::Open("results/mymain09_test_500k.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
@@ -65,6 +65,8 @@ void mymain09Macro_hadrons() {
 
     // Decay Status Contributions
     TCanvas *canvasMuon = new TCanvas("Muon_sigma","Muon_sigma");
+
+    gPad->SetLogy();
 
     muonPtTotal->SetLineColor(1);
     muonPtTotal->Draw();
