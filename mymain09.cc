@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 1000;
+    int N_events = 2000000;
 
     // Store multiplicity of each event
     int multBins;
