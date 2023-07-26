@@ -17,14 +17,14 @@ int main() {
     Pythia pythia;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain09_test.root", "RECREATE");
+    TFile* outFile = new TFile("mymain09.root", "RECREATE");
 
     // pTHat bins
     int nBins;
     const double* binEdges;
     if (softQCD) {
-        nBins = 6;
-        static const double tempArray[8] = {0.0, 16.0, 26.0, 36.0, 50.0, 70.0, 100.0};
+        nBins = 7;
+        static const double tempArray[8] = {0.0, 8.0, 16.0, 26.0, 36.0, 50.0, 70.0, 100.0};
         binEdges = &tempArray[0];
     } else {
         nBins = 5;
@@ -49,11 +49,11 @@ int main() {
     // Number of events to generate per bin.
     int N_events = 500000;
 
-    //vector<int> multiplicities(nBins*N_events); // luminocity from generated process sigma to calculate cross-sections
+    vector<int> multiplicities(nBins*N_events); // luminocity from generated process sigma to calculate cross-sections
 
     // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
-        if (softQCD && iBin == 0) {
+        if (softQCD && iBin < 2) {
             pythia.readString("HardQCD:all = off");
             pythia.readString("SoftQCD:nonDiffractive = on");
         } else {
@@ -76,24 +76,17 @@ int main() {
 
         int eventCount = 0;
 
-        int events_run;
-        if (softQCD && iBin == 0) {
-            events_run = 2*N_events;
-        } else {
-            events_run = N_events;
-        }
-
-        for (int iEvent = 0; iEvent < events_run; ++iEvent) {
-            //multiplicities[(iBin*N_events) + iEvent] = -1;
+        for (int iEvent = 0; iEvent < N_events; ++iEvent) {
+            multiplicities[(iBin*N_events) + iEvent] = -1;
 
             if (!pythia.next()) continue;
 
             double pTHat  = pythia.info.pTHat();
 
-            if (softQCD && iBin == 0 && pythia.info.isNonDiffractive()
+            if (softQCD && iBin < 2 && pythia.info.isNonDiffractive()
             && pTHat > binEdges[iBin+1]) continue;
 
-            //if (pTHat < binEdges[iBin]) continue;
+            if (pTHat < binEdges[iBin]) continue;
 
             eventCount++;
 
@@ -182,11 +175,11 @@ int main() {
                 }
             }
 
-            //multiplicities[(iBin*N_events) + iEvent] = multCount;
+            multiplicities[(iBin*N_events) + iEvent] = multCount;
         }
 
         // cross-section for the bin
-        double luminocity_hard = events_run/(pythia.info.sigmaGen()*pow(10,9));
+        double luminocity_hard = N_events/(pythia.info.sigmaGen()*pow(10,9));
         binLuminocity[iBin] = luminocity_hard;
 
         hardPtPart->Scale(1/luminocity_hard, "width");
@@ -203,7 +196,7 @@ int main() {
     }
 
     outFile->WriteObject(&binLuminocity, "luminocity");
-    //outFile->WriteObject(&multiplicities, "multiplicity");
+    outFile->WriteObject(&multiplicities, "multiplicity");
 
     delete outFile;
 
