@@ -65,16 +65,16 @@ int main() {
             pythia.readString("SoftQCD:nonDiffractive = on");
         } else {
             // set pythia initialization variables
-            pythia.readString("HardQCD:all = on");
-            // pythia.readString("HardQCD:hardccbar = on");
-            // pythia.readString("HardQCD:hardbbbar = on");
+            //pythia.readString("HardQCD:all = on");
+            pythia.readString("HardQCD:hardccbar = on");
+            pythia.readString("HardQCD:hardbbbar = on");
             pythia.readString("SoftQCD:nonDiffractive = off");
         }
 
         pythia.readString("Beams:eCM = 5020.");
         pythia.readString("Tune:pp = 14");
-        pythia.readString("411:onMode=off");
-        pythia.readString("411:onIfAny=13");
+        // pythia.readString("411:onMode=off");
+        // pythia.readString("411:onIfAny=13");
         pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
         pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
         pythia.init();
@@ -85,7 +85,7 @@ int main() {
 
         int events_run;
         if (softQCD && iBin == 0) {
-            events_run = 2*N_events;
+            events_run = 3*N_events;
         } else {
             events_run = N_events;
         }
