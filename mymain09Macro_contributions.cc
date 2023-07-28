@@ -5,7 +5,7 @@
 #include <TNtuple.h>
 
 void mymain09Macro_contributions() {
-    TFile *infile = TFile::Open("results/mymain09_test_500k.root", "READ");
+    TFile *infile = TFile::Open("results/mymain09_2M.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
@@ -16,7 +16,7 @@ void mymain09Macro_contributions() {
     for(std::vector<double>::iterator it = binLuminocity->begin(); it != binLuminocity->end(); ++it) {
         TNtuple *muonTuple = (TNtuple*)infile->Get(Form("muon%d", iBin));
 
-        TH1F *muonPtPart = new TH1F(Form("muon_pt_part_%d", iBin),"", 9, 2.0, 20.0);
+        TH1F *muonPtPart = new TH1F(Form("muon_pt_part_%d", iBin),"", 18, 2.0, 20.0);
         
         muonTuple->Draw(Form("pt>>muon_pt_part_%d", iBin), "(y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
         muonPtPart->Scale(1/(*it), "width");

@@ -5,7 +5,7 @@
 #include <TNtuple.h>
 
 void mymain09Macro_compare() {
-    TFile *infile = TFile::Open("results/mymain09_500k_forced_decay.root", "READ");
+    TFile *infile = TFile::Open("results/mymain09_2M.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);

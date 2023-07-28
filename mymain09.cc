@@ -24,7 +24,7 @@ int main() {
     const double* binEdges;
     if (softQCD) {
         nBins = 6;
-        static const double tempArray[8] = {0.0, 16.0, 26.0, 36.0, 50.0, 70.0, 100.0};
+        static const double tempArray[8] = {0.0, 16.0, 21.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
         binEdges = &tempArray[0];
     } else {
         nBins = 5;
@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 500000;
+    int N_events = 2000000;
 
     // Store multiplicity of each event
     int multBins;
@@ -65,9 +65,9 @@ int main() {
             pythia.readString("SoftQCD:nonDiffractive = on");
         } else {
             // set pythia initialization variables
-            //pythia.readString("HardQCD:all = on");
-            pythia.readString("HardQCD:hardccbar = on");
-            pythia.readString("HardQCD:hardbbbar = on");
+            pythia.readString("HardQCD:all = on");
+            // pythia.readString("HardQCD:hardccbar = on");
+            // pythia.readString("HardQCD:hardbbbar = on");
             pythia.readString("SoftQCD:nonDiffractive = off");
         }
 
