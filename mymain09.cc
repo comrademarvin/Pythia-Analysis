@@ -23,8 +23,8 @@ int main() {
     int nBins;
     const double* binEdges;
     if (softQCD) {
-        nBins = 6;
-        static const double tempArray[8] = {0.0, 16.0, 21.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
+        nBins = 9;
+        static const double tempArray[10] = {0.0, 16.0, 21.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
         binEdges = &tempArray[0];
     } else {
         nBins = 5;
