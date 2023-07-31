@@ -5,7 +5,7 @@
 #include <TNtuple.h>
 
 void mymain09Macro_compare() {
-    TFile *infile = TFile::Open("results/mymain09_2M.root", "READ");
+    TFile *infile = TFile::Open("results/mymain09_2M_v2.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
@@ -21,7 +21,11 @@ void mymain09Macro_compare() {
         TNtuple *muonTuple = (TNtuple*)infile->Get(Form("muon%d", iBin));
 
         muonPtPart->Reset();
-        muonTuple->Draw("pt>>muon_pt_part", "(pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        if (iBin == 0) {
+            muonTuple->Draw("pt>>muon_pt_part", "(pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        } else {
+            muonTuple->Draw("pt>>muon_pt_part", "(pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        }
         muonPtPart->Scale(1/(*it), "width");
         muonPtTotal->Add(muonPtPart);
 
@@ -32,6 +36,10 @@ void mymain09Macro_compare() {
     TFile *datafile = TFile::Open("Joyful Data/inclusive_muoncross_data.root", "READ");
     TH1F *muonData = new TH1F("muon_data","", NBINS, edges);
     muonData = (TH1F*)datafile->Get("crosssection_graph");
+
+    TFile *FONLLfile = TFile::Open("Joyful Data/total_cross_section_FONNL.root", "READ");
+    TH1F *muonFONLL = new TH1F("muon_fonll","", NBINS, edges);
+    muonFONLL = (TH1F*)FONLLfile->Get("FONLL total");
 
     // Output file
     TFile* outFile = new TFile("mymain09Hist_compare.root", "RECREATE");
@@ -52,10 +60,13 @@ void mymain09Macro_compare() {
     rp->Draw();
 
     rp->GetUpperPad()->cd();
+    muonFONLL->Draw("SAME");
+
     auto legendMuon = new TLegend();
     legendMuon->AddEntry(muonPtTotal,"Pythia","l");
     legendMuon->AddEntry(muonData,"Joyful Data","l");
-    legendMuon->Draw();
+    legendMuon->AddEntry(muonFONLL,"FONLL","l");
+    legendMuon->Draw("SAME");
 
     auto labelCuts = new TLatex();
     labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.02 TeV, 2.5 < y < 4");
