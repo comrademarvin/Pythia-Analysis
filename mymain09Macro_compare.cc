@@ -5,7 +5,7 @@
 #include <TNtuple.h>
 
 void mymain09Macro_compare() {
-    TFile *infile = TFile::Open("results/mymain09_2M_v2.root", "READ");
+    TFile *infile = TFile::Open("results/mymain09_500k_forced_decay.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
@@ -60,12 +60,12 @@ void mymain09Macro_compare() {
     rp->Draw();
 
     rp->GetUpperPad()->cd();
-    muonFONLL->Draw("SAME");
+    //muonFONLL->Draw("SAME");
 
     auto legendMuon = new TLegend();
     legendMuon->AddEntry(muonPtTotal,"Pythia","l");
     legendMuon->AddEntry(muonData,"Joyful Data","l");
-    legendMuon->AddEntry(muonFONLL,"FONLL","l");
+    //legendMuon->AddEntry(muonFONLL,"FONLL","l");
     legendMuon->Draw("SAME");
 
     auto labelCuts = new TLatex();
