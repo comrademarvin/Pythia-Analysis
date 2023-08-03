@@ -11,18 +11,25 @@ using namespace Pythia8;
 int main() {
     // Hard QCD
     Pythia pythiaHard;
-    pythiaHard.readString("Beams:eCM = 13700.");
+    pythiaHard.readString("Beams:eCM = 5200.");
     pythiaHard.readString("Tune:pp = 14");
     pythiaHard.readString("HardQCD:all = on");
     pythiaHard.readString("SoftQCD:nonDiffractive = off");
+    pythiaHard.readString("PartonLevel:all = off");
+    pythiaHard.readString("PhaseSpace:pTHatMinDiverge = 8.0");
+    pythiaHard.readString("PhaseSpace:pTHatMin = 8.0");
     pythiaHard.init();
 
     // Soft QCD
     Pythia pythiaSoft;
-    pythiaSoft.readString("Beams:eCM = 13700.");
+    pythiaSoft.readString("Beams:eCM = 5200.");
     pythiaSoft.readString("Tune:pp = 14");
     pythiaSoft.readString("HardQCD:all = off");
     pythiaSoft.readString("SoftQCD:nonDiffractive = on");
+    pythiaSoft.readString("PartonLevel:all = on");
+    pythiaSoft.readString("PartonLevel:ISR = off");
+    pythiaSoft.readString("PartonLevel:FSR = off");
+    pythiaSoft.readString("HadronLevel:all = off");
     pythiaSoft.init();
 
     // ROOT file for histograms
@@ -32,11 +39,15 @@ int main() {
     TNtuple* hardestHardQCD = new TNtuple("hardQCD", "hardQCD", "pTHat:thetaHat:phiHat");
     TNtuple* hardestSoftQCD = new TNtuple("softQCD", "softQCD", "pTHat:thetaHat:phiHat");
 
-    int N_events = 200000;
+    int N_events = 1000000;
+
+    int eventCounter = 0;
 
     for (int iEvent = 0; iEvent < N_events; ++iEvent) {
         if (!pythiaHard.next()) continue;
         if (!pythiaSoft.next()) continue;
+        
+        eventCounter++;
 
         hardestHardQCD->Fill(pythiaHard.info.pTHat(), pythiaHard.info.thetaHat(), pythiaHard.info.phiHat());
         hardestSoftQCD->Fill(pythiaSoft.info.pTHat(), pythiaSoft.info.thetaHat(), pythiaSoft.info.phiHat());
@@ -55,14 +66,14 @@ int main() {
     // Hard QCD hist
     TH1F *hardQCDpTHat = new TH1F("hard_QCD_pTHat","Contribution to Hardest Process;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 40, 0, 40);
     hardQCDpTHat->SetLineColor(1);
-    hardQCDpTHat->SetStats(0);
+    //hardQCDpTHat->SetStats(0);
     hardestHardQCD->Draw("pTHat>>hard_QCD_pTHat", "pTHat<40");
     hardQCDpTHat->Scale(1/luminocity_hard, "width");
 
     // Soft QCD hist
     TH1F *softQCDpTHat = new TH1F("soft_QCD_pTHat", "Contribution to hardest process;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 40, 0, 40);
     softQCDpTHat->SetLineColor(2);
-    softQCDpTHat->SetStats(0);
+    //softQCDpTHat->SetStats(0);
     hardestSoftQCD->Draw("pTHat>>soft_QCD_pTHat", "pTHat<40", "SAME");
     softQCDpTHat->Scale(1/luminocity_soft, "width");
 

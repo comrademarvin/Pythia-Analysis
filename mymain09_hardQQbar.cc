@@ -23,8 +23,8 @@ int main() {
     int nBins;
     const double* binEdges;
     if (softQCD) {
-        nBins = 9;
-        static const double tempArray[10] = {0.0, 16.0, 21.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
+        nBins = 10;
+        static const double tempArray[11] = {0.0, 10.0, 15.0, 20.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
         binEdges = &tempArray[0];
     } else {
         nBins = 5;
@@ -47,11 +47,11 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 100;
+    int N_events = 500000;
 
     // Store multiplicity of each event
     int multBins;
-    int scaleSoftBin = 5;
+    int scaleSoftBin = 20;
     if (softQCD) { 
         multBins = nBins+(scaleSoftBin-1);
     } else {
@@ -91,9 +91,11 @@ int main() {
         for (int iEvent = 0; iEvent < events_run; ++iEvent) {
             if (!pythia.next()) continue;
 
-            int subprocessCode = pythia.info.code();
+            int subprocessCode = pythia.info.codeSub();
 
-            if (iBin == 0 && (subprocessCode < 121 || subprocessCode > 124)) continue; 
+            if (iBin == 0 && pythia.info.hasSub()) {
+                if (subprocessCode < 121 || subprocessCode > 124) continue;
+            }
 
             double pTHat  = pythia.info.pTHat();
 
@@ -202,7 +204,7 @@ int main() {
         }
 
         // cross-section for the bin
-        double luminocity_hard = eventCount/(pythia.info.sigmaGen()*pow(10,9));
+        double luminocity_hard = events_run/(pythia.info.sigmaGen()*pow(10,9));
         binLuminocity[iBin] = luminocity_hard;
 
         hardPtPart->Scale(1/luminocity_hard, "width");

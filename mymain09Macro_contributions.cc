@@ -5,7 +5,7 @@
 #include <TNtuple.h>
 
 void mymain09Macro_contributions() {
-    TFile *infile = TFile::Open("results/mymain09_2M_v2.root", "READ");
+    TFile *infile = TFile::Open("results/mymain09_hardQQbar_100k.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
