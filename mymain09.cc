@@ -23,8 +23,8 @@ int main() {
     int nBins;
     const double* binEdges;
     if (softQCD) {
-        nBins = 9;
-        static const double tempArray[10] = {0.0, 16.0, 21.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
+        nBins = 10;
+        static const double tempArray[11] = {0.0, 10.0, 15.0, 20.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
         binEdges = &tempArray[0];
     } else {
         nBins = 5;
@@ -43,16 +43,17 @@ int main() {
     vector<TNtuple*> muonTuples(nBins);
 
     for (int i = 0; i < nBins; ++i) {
-        muonTuples[i] = new TNtuple(Form("muon%d", i), "muon", "binTag:eventTag:pt:y:eta:decayStatus:firstMother:lastMother"); // see definition of decayStaus below
+        muonTuples[i] = new TNtuple(Form("muon%d", i), "muon", "binTag:eventTag:pAbs:pt:y:eta:decayStatus:firstMother:lastMother"); // see definition of decayStaus below
     }
 
     // Number of events to generate per bin.
-    int N_events = 2000000;
+    int N_events = 1000000;
 
     // Store multiplicity of each event
     int multBins;
+    int scaleSoftBin = 5;
     if (softQCD) { 
-        multBins = nBins+1;
+        multBins = nBins+(scaleSoftBin-1);
     } else {
         multBins = nBins;
     }
@@ -85,7 +86,7 @@ int main() {
 
         int events_run;
         if (softQCD && iBin == 0) {
-            events_run = 3*N_events;
+            events_run = scaleSoftBin*N_events;
         } else {
             events_run = N_events;
         }
@@ -113,6 +114,7 @@ int main() {
 
                 int particleID = abs(pythia.event[i].id());
                 int particleStatus = abs(pythia.event[i].status());
+                double particlePAbs = pythia.event[i].pAbs();
                 double particlePt = pythia.event[i].pT();
                 double particleRapidity = pythia.event[i].y();
                 double particlePseudorapidity = pythia.event[i].eta();
@@ -183,7 +185,7 @@ int main() {
                         cout << decayOutput << endl;
                     }
 
-                    muonTuples[iBin]->Fill(iBin, iEvent, particlePt, particleRapidity, particlePseudorapidity, decayStatusTemp, firstMotherID, lastMotherID);
+                    muonTuples[iBin]->Fill(iBin, iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity, decayStatusTemp, firstMotherID, lastMotherID);
                 }
             }
 
@@ -191,7 +193,7 @@ int main() {
                 if (iBin == 0) {
                     multiplicities[iEvent] = multCount;
                 } else {
-                    multiplicities[((iBin+1)*N_events) + iEvent] = multCount;
+                    multiplicities[((iBin+(scaleSoftBin-1))*N_events) + iEvent] = multCount;
                 }
             } else {
                 multiplicities[(iBin*N_events) + iEvent] = multCount;

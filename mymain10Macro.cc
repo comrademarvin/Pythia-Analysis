@@ -3,7 +3,7 @@
 #include "TCanvas.h"
 #include <TNtuple.h>
 
-void mymain09Macro_hadrons() {
+void mymain10Macro() {
     TFile *infile = TFile::Open("results/mymain10_100k.root", "READ");
 
     std::vector<double> *binLuminocity;
@@ -50,26 +50,26 @@ void mymain09Macro_hadrons() {
 
     gPad->SetLogy();
 
-    muonPtTotal->SetLineColor(1);
-    muonPtTotal->Draw();
+    HFEventsTotal->SetLineColor(1);
+    HFEventsTotal->Draw();
 
-    muonPtD->SetLineColor(2);
-    muonPtD->SetStats(0);
-    muonPtD->Draw("SAME");
+    HFPair->SetLineColor(2);
+    HFPair->SetStats(0);
+    HFPair->Draw("SAME");
 
-    muonPtB->SetLineColor(3);
-    muonPtB->SetStats(0);
-    muonPtB->Draw("SAME");
+    HFExcite->SetLineColor(3);
+    HFExcite->SetStats(0);
+    HFExcite->Draw("SAME");
 
-    muonPtBD->SetLineColor(4);
-    muonPtBD->SetStats(0);
-    muonPtBD->Draw("SAME");
+    HFSplit->SetLineColor(4);
+    HFSplit->SetStats(0);
+    HFSplit->Draw("SAME");
 
     auto legendHFProductions = new TLegend();
-    legendHFProductions->AddEntry(muonPtTotal,"Inclusive #mu","l");
-    legendHFProductions->AddEntry(muonPtD,"c->D->#mu","l");
-    legendHFProductions->AddEntry(muonPtB,"b->B->#mu","l");
-    legendHFProductions->AddEntry(muonPtBD,"b->B->D->#mu","l");
+    legendHFProductions->AddEntry(HFEventsTotal,"HF Events","l");
+    legendHFProductions->AddEntry(HFPair,"Pair Creation Events","l");
+    legendHFProductions->AddEntry(HFExcite,"Flavour Excitation","l");
+    legendHFProductions->AddEntry(HFSplit,"Gluon Splitting","l");
     legendHFProductions->Draw("SAME");
 
     canvasHFEvents->Write();

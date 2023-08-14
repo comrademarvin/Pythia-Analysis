@@ -24,11 +24,11 @@ int main() {
     const double* binEdges;
     if (softQCD) {
         nBins = 2;
-        static const double tempArray[8] = {0.0, 16.0, 100.0};
+        static const double tempArray[3] = {0.0, 10.0, 100.0};
         binEdges = &tempArray[0];
     } else {
         nBins = 1;
-        static const double tempArray[6] = {16.0, 100.0};
+        static const double tempArray[2] = {16.0, 100.0};
         binEdges = &tempArray[0];
     }
 
@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 1000000;
+    int N_events = 10000;
 
     // Store multiplicity of each event
     // int multBins;
@@ -66,8 +66,6 @@ int main() {
         } else {
             // set pythia initialization variables
             pythia.readString("HardQCD:all = on");
-            // pythia.readString("HardQCD:hardccbar = on");
-            // pythia.readString("HardQCD:hardbbbar = on");
             pythia.readString("SoftQCD:nonDiffractive = off");
         }
 
@@ -77,6 +75,14 @@ int main() {
         // pythia.readString("411:onIfAny=13");
         pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
         pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
+
+        // HardQCD scaled by factor
+        if (iBin == 1) {
+            pythia.readString("PhaseSpace:bias2Selection = on");
+            pythia.readString("PhaseSpace:bias2SelectionPow = 4.");
+            pythia.readString("PhaseSpace:bias2SelectionRef = 20.");
+        }
+
         pythia.init();
 
         hardPtPart->Reset();
@@ -102,7 +108,12 @@ int main() {
 
             eventCount++;
 
-            hardPtPart->Fill(pTHat);
+            double weight = pythia.info.weight();
+            if (iBin == 1) {
+                hardPtPart->Fill(pTHat, weight * pow3(pTHat));
+            } else {
+                hardPtPart->Fill(pTHat);
+            }
 
             //cout << "====START OF NEW EVENT====" << endl;
 
@@ -199,7 +210,15 @@ int main() {
         }
 
         // cross-section for the bin
-        double luminocity_hard = events_run/(pythia.info.sigmaGen()*pow(10,9));
+        double luminocity_hard;
+        if (iBin == 1) {
+            double sigmaNorm = (pythia.info.sigmaGen()*pow(10,9) / pythia.info.weightSum());
+                    // * (nRange / pTrange);
+            luminocity_hard = 1/sigmaNorm;
+        } else {
+            luminocity_hard = events_run/(pythia.info.sigmaGen()*pow(10,9));
+        }
+        
         binLuminocity[iBin] = luminocity_hard;
 
         hardPtPart->Scale(1/luminocity_hard, "width");
