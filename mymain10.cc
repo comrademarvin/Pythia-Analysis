@@ -41,9 +41,11 @@ int main() {
 
     // HF Cross Sections
     vector<TNtuple*> HFEventTuples(nBins);
+    vector<TNtuple*> HFProducedTuples(nBins);
 
     for (int i = 0; i < nBins; ++i) {
         HFEventTuples[i] = new TNtuple(Form("HF_events%d", i), "HF_events", "ptHat:prodCount"); // see definition of prodMech below
+        HFProducedTuples[i] = new TNtuple(Form("HF_produced%d", i), "HF_produced", "ID:pt:y:prodCount:tau"); // see definition of prodMech below
     }
 
     // Number of events to generate per bin.
@@ -61,8 +63,8 @@ int main() {
 
         pythia.readString("Beams:eCM = 5020.");
         pythia.readString("Tune:pp = 14");
-        pythia.readString("PartonLevel:all = on");
-        pythia.readString("HadronLevel:all = off");
+        // pythia.readString("PartonLevel:all = on");
+        // pythia.readString("HadronLevel:all = off");
         pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
         pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
         pythia.init();
@@ -95,6 +97,9 @@ int main() {
             hardPtPart->Fill(pTHat);
 
             //cout << "====START OF NEW EVENT====" << endl;
+            int HFCount = 0;
+            int tempHFArray[20];
+
             int hardestHFCount = 0;
             bool HFEvent = false;
 
@@ -105,6 +110,11 @@ int main() {
                 if (particleID == 4 || particleID == 5) { // is HF
                     HFEvent = true;
                     if (particleStatus == 23) hardestHFCount++;
+                    
+                    if (particleStatus > 70 && particleStatus < 80) {
+                        tempHFArray[HFCount] = i;
+                        HFCount++;
+                    } 
                 } 
             }
 

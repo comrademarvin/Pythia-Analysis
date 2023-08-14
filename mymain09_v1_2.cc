@@ -23,12 +23,12 @@ int main() {
     int nBins;
     const double* binEdges;
     if (softQCD) {
-        nBins = 7;
-        static const double tempArray[8] = {0.0, 10.0, 30.0, 50.0, 75.0, 100.0, 150.0, 200.0};
+        nBins = 10;
+        static const double tempArray[11] = {0.0, 10.0, 15.0, 20.0, 26.0, 32.0, 40.0, 50.0, 62.0, 76.0, 100.0};
         binEdges = &tempArray[0];
     } else {
-        nBins = 4;
-        static const double tempArray[5] = {10.0, 30.0, 50.0, 75.0, 100.0};
+        nBins = 5;
+        static const double tempArray[6] = {16.0, 26.0, 36.0, 50.0, 70.0, 100.0};
         binEdges = &tempArray[0];
     }
 
@@ -36,8 +36,8 @@ int main() {
 
     // Histograms
     // Total Cross Section
-    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 200, 0.0, 200.0);
-    TH1F *hardPtPart = new TH1F("hardQCD_part","", 200, 0.0, 200.0);
+    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 100, 0.0, 100.0);
+    TH1F *hardPtPart = new TH1F("hardQCD_part","", 100, 0.0, 100.0);
 
     // HF Cross Sections
     vector<TNtuple*> muonTuples(nBins);
@@ -47,17 +47,17 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 100000;
+    int N_events = 1000000;
 
     // Store multiplicity of each event
-    // int multBins;
-    // int scaleSoftBin = 3;
-    // if (softQCD) { 
-    //     multBins = nBins+(scaleSoftBin-1);
-    // } else {
-    //     multBins = nBins;
-    // }
-    // vector<int> multiplicities(multBins*N_events, -1);
+    int multBins;
+    int scaleSoftBin = 5;
+    if (softQCD) { 
+        multBins = nBins+(scaleSoftBin-1);
+    } else {
+        multBins = nBins;
+    }
+    vector<int> multiplicities(multBins*N_events, -1);
 
     // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
@@ -86,9 +86,7 @@ int main() {
 
         int events_run;
         if (softQCD && iBin == 0) {
-            events_run = 5*N_events;
-        } else if (iBin == 1) {
-            events_run = 2*N_events;
+            events_run = scaleSoftBin*N_events;
         } else {
             events_run = N_events;
         }
@@ -191,15 +189,15 @@ int main() {
                 }
             }
 
-            // if (softQCD) {
-            //     if (iBin == 0) {
-            //         multiplicities[iEvent] = multCount;
-            //     } else {
-            //         multiplicities[((iBin+(scaleSoftBin-1))*N_events) + iEvent] = multCount;
-            //     }
-            // } else {
-            //     multiplicities[(iBin*N_events) + iEvent] = multCount;
-            // }
+            if (softQCD) {
+                if (iBin == 0) {
+                    multiplicities[iEvent] = multCount;
+                } else {
+                    multiplicities[((iBin+(scaleSoftBin-1))*N_events) + iEvent] = multCount;
+                }
+            } else {
+                multiplicities[(iBin*N_events) + iEvent] = multCount;
+            }
         }
 
         // cross-section for the bin
@@ -220,7 +218,7 @@ int main() {
     }
 
     outFile->WriteObject(&binLuminocity, "luminocity");
-    //outFile->WriteObject(&multiplicities, "multiplicity");
+    outFile->WriteObject(&multiplicities, "multiplicity");
 
     delete outFile;
 
