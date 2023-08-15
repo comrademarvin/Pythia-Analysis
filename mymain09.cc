@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 100000;
+    int N_events = 750000;
 
     // Store multiplicity of each event
     // int multBins;
@@ -86,9 +86,9 @@ int main() {
 
         int events_run;
         if (softQCD && iBin == 0) {
-            events_run = 5*N_events;
+            events_run = 10*N_events;
         } else if (iBin == 1) {
-            events_run = 2*N_events;
+            events_run = 5*N_events;
         } else {
             events_run = N_events;
         }
