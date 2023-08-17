@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     TNtuple* muonTuple = new TNtuple("muon", "muon", "binTag:eventTag:pAbs:pt:y:eta:decayStatus:firstMother:lastMother");
 
     // Number of events to generate per bin.
-    int N_events = 100;
+    int N_events = 2000000;
 
     int events_run;
     if (softQCD && iBin == 0) {
