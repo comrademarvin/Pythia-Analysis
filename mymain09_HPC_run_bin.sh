@@ -1,0 +1,1 @@
+./mymain09_HPC $1 > mymain09_HPC_root/myout09_$1
