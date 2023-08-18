@@ -8,7 +8,7 @@ void mymain09Macro_HPC_contributions() {
     const Int_t NBINS = 12;
     Double_t edges[NBINS + 1] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20};
 
-    TFile* outFile = new TFile("mymain09Hist_HPC_contribution.root", "RECREATE");
+    vector<TH1F*> binHist(7);
 
     for(int iBin = 0; iBin < 7; iBin++) {
         TFile *infile = TFile::Open(Form("mymain09_HPC_root/mymain09_%d.root", iBin), "READ");
@@ -27,11 +27,17 @@ void mymain09Macro_HPC_contributions() {
         }
 
         muonPtPart->Scale(1/(*binLuminocity)[iBin], "width");
-        
+
+        binHist[iBin] = muonPtPart;
+    }
+
+    TFile* outFile = new TFile("mymain09Hist_HPC_contribution.root", "RECREATE");
+
+    for(int iBin = 0; iBin < 7; iBin++) {
         TCanvas *canvasMuon = new TCanvas(Form("muon_sigma_%d", iBin), Form("muon_sigma_%d", iBin));
 
         gPad->SetLogy();
-        muonPtPart->Draw();
+        binHist[iBin]->Draw();
 
         canvasMuon->Write();
     }

@@ -4,8 +4,8 @@
 #include "TLatex.h"
 #include <TNtuple.h>
 
-void mymain09Macro_compare() {
-    TFile *infile = TFile::Open("results/mymain09_100k_v1_3.root", "READ");
+void mymain09Macro_compare_forced_decay() {
+    TFile *infile = TFile::Open("results/mymain09_500k_forced_decay.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
@@ -22,17 +22,19 @@ void mymain09Macro_compare() {
     for(std::vector<double>::iterator it = binLuminocity->begin(); it != binLuminocity->end(); ++it) {
         TNtuple *muonTuple = (TNtuple*)infile->Get(Form("muon%d", iBin));
 
-        muonPtPart->Reset();
+        muonPtD0->Reset();
+        muonPtRest->Reset();
         if (iBin == 0) {
-            muonTuple->Draw("pt>>muon_pt_D0", "(lastMother == 411) && (pAbs > 4.0) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_rest", "(lastMother == 411) &&  (pAbs > 4.0) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_D0", "(lastMother == 411) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_rest", "(lastMother == 411) &&  (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
         } else {
-            muonTuple->Draw("pt>>muon_pt_D0", "(pAbs > 4.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_rest", "(pAbs > 4.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_D0", "(pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_rest", "(pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
         }
 
-        double D0_BR = 0.0677; 
-        muonPtRest->Add(muonPtD0/D0_BR);
+        double D0_BR = 0;
+        muonPtD0->Scale(D0_BR);
+        muonPtRest->Add(muonPtD0);
         muonPtRest->Scale(1/(*it), "width");
         muonPtTotal->Add(muonPtRest);
 
@@ -70,7 +72,7 @@ void mymain09Macro_compare() {
     rp->Draw();
 
     rp->GetUpperPad()->cd();
-    muonFONLL->Draw("SAME");
+    //muonFONLL->Draw("SAME");
 
     auto legendMuon = new TLegend();
     legendMuon->AddEntry(muonPtTotal,"Pythia D0 Forced Decay","l");
