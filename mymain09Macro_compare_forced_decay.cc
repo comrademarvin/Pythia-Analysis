@@ -15,6 +15,7 @@ void mymain09Macro_compare_forced_decay() {
 
     TH1F *muonPtTotal = new TH1F("muon_full","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS, edges);
 
+    TH1F *muonPtD = new TH1F("muon_pt_D","", NBINS, edges);
     TH1F *muonPtD0 = new TH1F("muon_pt_D0","", NBINS, edges);
     TH1F *muonPtRest = new TH1F("muon_pt_rest","", NBINS, edges);
 
@@ -25,15 +26,22 @@ void mymain09Macro_compare_forced_decay() {
         muonPtD0->Reset();
         muonPtRest->Reset();
         if (iBin == 0) {
-            muonTuple->Draw("pt>>muon_pt_D0", "(lastMother == 411) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_rest", "(lastMother == 411) &&  (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_D", "(lastMother == 411) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_D0", "(lastMother == 421) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_rest", "(lastMother != 411) && (lastMother != 421) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
         } else {
-            muonTuple->Draw("pt>>muon_pt_D0", "(pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_rest", "(pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_D", "(lastMother == 411) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_D0", "(lastMother == 421) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            muonTuple->Draw("pt>>muon_pt_rest", "((lastMother != 411) && (lastMother != 421) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
         }
 
-        double D0_BR = 0;
+        // Scale by Branching Ratio
+        double D_BR = 0.176;
+        double D_0_BR = 0.067;
+        muonPtD->Scale(D_BR);
         muonPtD0->Scale(D0_BR);
+
+        muonPtRest->Add(muonPtD);
         muonPtRest->Add(muonPtD0);
         muonPtRest->Scale(1/(*it), "width");
         muonPtTotal->Add(muonPtRest);

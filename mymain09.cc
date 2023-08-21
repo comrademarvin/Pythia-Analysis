@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 750000;
+    int N_events = 10000;
 
     // Store multiplicity of each event
     // int multBins;
@@ -74,8 +74,14 @@ int main() {
 
         pythia.readString("Beams:eCM = 5020.");
         pythia.readString("Tune:pp = 14");
+
+        // // D+ forced muon decay
         // pythia.readString("411:onMode=off");
         // pythia.readString("411:onIfAny=13");
+        // // D0 forced muon decay
+        // pythia.readString("421:onMode=off");
+        // pythia.readString("421:onIfAny=13");
+
         pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
         pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
         pythia.init();
