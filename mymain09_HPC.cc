@@ -75,8 +75,8 @@ int main(int argc, char *argv[]) {
     pythia.readString("411:onMode=off");
     pythia.readString("411:onIfAny=13");
     // D0 forced muon decay
-    pythia.readString("421:onMode=off");
-    pythia.readString("421:onIfAny=13");
+    // pythia.readString("421:onMode=off");
+    // pythia.readString("421:onIfAny=13");
 
     pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
     pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
