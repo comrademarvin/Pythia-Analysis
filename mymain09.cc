@@ -47,7 +47,7 @@ int main() {
     }
 
     // Number of events to generate per bin.
-    int N_events = 10000;
+    int N_events = 1000;
 
     // Store multiplicity of each event
     // int multBins;
@@ -175,10 +175,12 @@ int main() {
                         } else if (lastMotherID >= 511 && lastMotherID <= 545) { // case 2
                             decayStatusTemp = 2;
                         }
+                        cout << decayOutput << "; First: " << firstMotherID << ", Last: " << lastMotherID << endl;
                     } else if (firstMotherID >= 511 && firstMotherID <= 545) { // B Meson decay
                         if (lastMotherID >= 511 && lastMotherID <= 545) { // case 1
                             decayStatusTemp = 1;
                         }
+                        cout << decayOutput << "; First: " << firstMotherID << ", Last: " << lastMotherID << endl;
                     } else if (firstMotherID >= 4122 && firstMotherID <= 4444) { // case 3
                         decayStatusTemp = 3;
                     } else if (firstMotherID >= 5122 && firstMotherID <= 5554) { // case 4
@@ -189,8 +191,6 @@ int main() {
                         decayStatusTemp = 6;
                     } else if (firstMotherID == 15) {
                         decayStatusTemp = 7;
-                    } else {
-                        cout << decayOutput << endl;
                     }
 
                     muonTuples[iBin]->Fill(iBin, iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity, decayStatusTemp, firstMotherID, lastMotherID);
