@@ -72,6 +72,9 @@ int main(int argc, char *argv[]) {
 
     pythia.readString("Beams:eCM = 5020.");
     pythia.readString("Tune:pp = 14");
+
+    // Set PDF
+    pythia.readString("PDF:pSet = 8");
     
     // D+ forced muon decay
     pythia.readString("411:onMode=off");
