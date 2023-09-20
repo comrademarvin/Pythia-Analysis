@@ -11,7 +11,7 @@ void mymain09Macro_HPC_compare_forced() {
     TH1F *muonPtTotal = new TH1F("muon_full","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS, edges);
 
     for(int iBin = 0; iBin < 7; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain09_HPC_root/mymain09_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("HPC_4M_PDF9/mymain09_%d.root", iBin), "READ");
 
         std::vector<double> *binLuminocity;
         infile->GetObject("luminocity", binLuminocity);
@@ -78,8 +78,8 @@ void mymain09Macro_HPC_compare_forced() {
     //muonFONLL->Draw("SAME");
 
     auto legendMuon = new TLegend();
-    legendMuon->AddEntry(muonPtTotal,"Pythia","l");
-    legendMuon->AddEntry(muonData,"Joyful Data","l");
+    legendMuon->AddEntry(muonPtTotal,"Pythia (CTEQ66.00, NLO)","l");
+    legendMuon->AddEntry(muonData,"Published","l");
     //legendMuon->AddEntry(muonFONLL,"FONLL","l");
     legendMuon->Draw("SAME");
 

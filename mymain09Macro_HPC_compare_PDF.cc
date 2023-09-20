@@ -5,81 +5,71 @@
 #include <TNtuple.h>
 
 void mymain09Macro_HPC_compare_PDF() {
+    int pdf_count = 4;
+    int pdf_runs[] = {8, 9, 13, 19};
+    const char* pdf_labels[] = {"CTEQ6L1, LO", "CTEQ66.00, NLO", "NNPDF2.3 QCD+QED LO (Monash)", "NNPDF3.1 QCD+LUXQED NLO"};
+
     const Int_t NBINS = 12;
     Double_t edges[NBINS + 1] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20};
 
-    TH1F *muonPtTotalPDF1 = new TH1F("muon_full_pdf_1","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS, edges);
-    TH1F *muonPtTotalPDF2 = new TH1F("muon_full_pdf_2","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS, edges);
+    vector<TH1F*> muonPtTotal(pdf_count);
 
-    for(int iBin = 0; iBin < 7; iBin++) {
-        // do in a loop, add to top histo
-        TFile *infilePDF1 = TFile::Open(Form("PDF1/mymain09_%d.root", iBin), "READ");
-        TFile *infilePDF2 = TFile::Open(Form("PDF2/mymain09_%d.root", iBin), "READ");
+    for (int iPDF = 0; iPDF < pdf_count; iPDF++) {
+        muonPtTotal[iPDF] = new TH1F(Form("muon_full_pdf_%d", pdf_runs[iPDF]),"HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS, edges);
 
-        std::vector<double> *binLuminocity;
-        infile->GetObject("luminocity", binLuminocity);
+        for(int iBin = 0; iBin < 7; iBin++) {
+            TFile *infile = TFile::Open(Form("HPC_4M_PDF%d/mymain09_%d.root", pdf_runs[iPDF], iBin), "READ");
 
-        TNtuple *muonTuple = (TNtuple*)infile->Get("muon");
+            std::vector<double> *binLuminocity;
+            infile->GetObject("luminocity", binLuminocity);
 
-        TH1F *muonPtD = new TH1F("muon_pt_D","", NBINS, edges);
-        TH1F *muonPtD0 = new TH1F("muon_pt_D0","", NBINS, edges);
-        TH1F *muonPtRest = new TH1F("muon_pt_rest","", NBINS, edges);
+            TNtuple *muonTuple = (TNtuple*)infile->Get("muon");
 
-        if (iBin == 0) {
-            muonTuple->Draw("pt>>muon_pt_D", "(firstMother == 411) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_D0", "(firstMother == 421) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_rest", "(firstMother != 411) && (firstMother != 421) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        } else {
-            muonTuple->Draw("pt>>muon_pt_D", "(firstMother == 411) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_D0", "(firstMother == 421) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-            muonTuple->Draw("pt>>muon_pt_rest", "(firstMother != 411) && (firstMother != 421) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            TH1F *muonPtD = new TH1F("muon_pt_D","", NBINS, edges);
+            TH1F *muonPtD0 = new TH1F("muon_pt_D0","", NBINS, edges);
+            TH1F *muonPtRest = new TH1F("muon_pt_rest","", NBINS, edges);
+
+            if (iBin == 0) {
+                muonTuple->Draw("pt>>muon_pt_D", "(firstMother == 411) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+                muonTuple->Draw("pt>>muon_pt_D0", "(firstMother == 421) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+                muonTuple->Draw("pt>>muon_pt_rest", "(firstMother != 411) && (firstMother != 421) && (pt < 10.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            } else {
+                muonTuple->Draw("pt>>muon_pt_D", "(firstMother == 411) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+                muonTuple->Draw("pt>>muon_pt_D0", "(firstMother == 421) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+                muonTuple->Draw("pt>>muon_pt_rest", "(firstMother != 411) && (firstMother != 421) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+            }
+
+            // Scale by Branching Ratio
+            double D_BR = 0.176;
+            double D0_BR = 0.067;
+            muonPtD->Scale(D_BR);
+            muonPtD0->Scale(D0_BR);
+
+            muonPtRest->Add(muonPtD);
+            muonPtRest->Add(muonPtD0);
+            muonPtRest->Scale(1/(*binLuminocity)[iBin], "width");
+            muonPtTotal[iPDF]->Add(muonPtRest);
         }
-
-        // Scale by Branching Ratio
-        double D_BR = 0.176;
-        double D0_BR = 0.067;
-        muonPtD->Scale(D_BR);
-        muonPtD0->Scale(D0_BR);
-
-        muonPtRest->Add(muonPtD);
-        muonPtRest->Add(muonPtD0);
-        muonPtRest->Scale(1/(*binLuminocity)[iBin], "width");
-        muonPtTotal->Add(muonPtRest);
     }
-
-    // Data to compare with
-    TFile *datafile = TFile::Open("Joyful Data/inclusive_muoncross_data.root", "READ");
-    TH1F *muonData = new TH1F("muon_data","", NBINS, edges);
-    muonData = (TH1F*)datafile->Get("crosssection_graph");
 
     // Output file
     TFile* outFile = new TFile("mymain09Hist_HPC_compare_PDF.root", "RECREATE");
 
-    // Just results
-    muonPtTotal->Write("Muon_sigma_results");
-
     // Decay Status Contributions
-    TCanvas *canvasMuon = new TCanvas("Muon_sigma","Muon_sigma");
+    TCanvas *canvasMuon = new TCanvas("Muon_sigma_PDF","Muon_sigma_PDF");
 
     gPad->SetLogy();
 
-    muonPtTotal->SetLineColor(1);
-    // muonPtTotal->Draw();
-
-    muonData->SetLineColor(2);
-    // muonData->Draw("SAME");
-
-    auto rp = new TRatioPlot(muonPtTotal, muonData);
-    rp->SetH1DrawOpt("E");
-    rp->Draw();
-
-    rp->GetUpperPad()->cd();
-    //muonFONLL->Draw("SAME");
-
     auto legendMuon = new TLegend();
-    legendMuon->AddEntry(muonPtTotal,"Pythia","l");
-    legendMuon->AddEntry(muonData,"Joyful Data","l");
-    //legendMuon->AddEntry(muonFONLL,"FONLL","l");
+
+    for (int iPDF = 0; iPDF < pdf_count; iPDF++) {
+        muonPtTotal[iPDF]->SetLineColor(iPDF+1);
+        muonPtTotal[iPDF]->SetStats(0);
+        muonPtTotal[iPDF]->Draw("SAME");
+
+        legendMuon->AddEntry(muonPtTotal[iPDF],pdf_labels[iPDF],"l");
+    }
+
     legendMuon->Draw("SAME");
 
     auto labelCuts = new TLatex();
