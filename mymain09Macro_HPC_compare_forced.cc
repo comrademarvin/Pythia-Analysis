@@ -45,13 +45,13 @@ void mymain09Macro_HPC_compare_forced() {
     }
 
     // Data to compare with
-    TFile *datafile = TFile::Open("Joyful Data/inclusive_muoncross_data.root", "READ");
+    TFile *datafile = TFile::Open("Joyful Data/muon_pt_differential_published.root", "READ");
     TH1F *muonData = new TH1F("muon_data","", NBINS, edges);
     muonData = (TH1F*)datafile->Get("crosssection_graph");
 
-    TFile *FONLLfile = TFile::Open("Joyful Data/total_cross_section_FONNL.root", "READ");
-    TH1F *muonFONLL = new TH1F("muon_fonll","", NBINS, edges);
-    muonFONLL = (TH1F*)FONLLfile->Get("FONLL total");
+    // TFile *FONLLfile = TFile::Open("Joyful Data/total_cross_section_FONNL.root", "READ");
+    // TH1F *muonFONLL = new TH1F("muon_fonll","", NBINS, edges);
+    // muonFONLL = (TH1F*)FONLLfile->Get("FONLL total");
 
     // Output file
     TFile* outFile = new TFile("mymain09Hist_HPC_compare_forced.root", "RECREATE");
