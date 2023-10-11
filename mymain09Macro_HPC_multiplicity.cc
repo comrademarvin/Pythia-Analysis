@@ -24,7 +24,7 @@ void mymain09Macro_HPC_multiplicity() {
     // }
 
     // pThat multiplicity
-    TH1F* multiplicity_events = new TH1F("", "Multiplicity of all events;N_{ch};N/N_{events}", 300, 0, 300);
+    TH1F* multiplicity_events = new TH1F("", "Multiplicity of all events;N_{ch};#sigma (mb)", 300, 0, 300);
 
     vector<TH1F*> pThat_bins_mult(pThat_bins_count);
 
@@ -54,13 +54,13 @@ void mymain09Macro_HPC_multiplicity() {
 
         // event multiplicities
         for(std::vector<int>::iterator mult = mult_events->begin(); mult != mult_events->end(); ++mult) {
-            if (*mult != -1) {
+            if (*mult > 0) {
                 pThat_bins_mult[iBin]->Fill(*mult);
             }
         }
 
-        Double_t scale = pThat_bins_mult[iBin]->GetXaxis()->GetBinWidth(1)/(pThat_bins_mult[iBin]->Integral());
-        //Double_t scale = 1/(*binLuminocity)[iBin];
+        //Double_t scale = pThat_bins_mult[iBin]->GetXaxis()->GetBinWidth(1)/(pThat_bins_mult[iBin]->Integral());
+        Double_t scale = pow(10,-9)/(*binLuminocity)[iBin];
         pThat_bins_mult[iBin]->Scale(scale);
 
         multiplicity_events->Add(pThat_bins_mult[iBin]);
@@ -80,14 +80,14 @@ void mymain09Macro_HPC_multiplicity() {
             int muon_decay_type = static_cast<int>(decayStatus);
 
             if (muon_decay_type == 0 || muon_decay_type == 1 || muon_decay_type == 2) {
-                if (event_mult != -1) {
+                if (event_mult > 0) {
                     pThat_bins_mult_muon[iBin]->Fill(event_mult);
                 }
             }
         }
 
-        Double_t scaleMuon = pThat_bins_mult_muon[iBin]->GetXaxis()->GetBinWidth(1)/(pThat_bins_mult_muon[iBin]->Integral());
-        //Double_t scaleMuon = 1/(*binLuminocity)[iBin];
+        //Double_t scaleMuon = pThat_bins_mult_muon[iBin]->GetXaxis()->GetBinWidth(1)/(pThat_bins_mult_muon[iBin]->Integral());
+        Double_t scaleMuon = pow(10,-9)/(*binLuminocity)[iBin];
         pThat_bins_mult_muon[iBin]->Scale(scaleMuon);
         multiplicity_total->Add(pThat_bins_mult_muon[iBin]);
     }
