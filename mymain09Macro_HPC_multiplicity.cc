@@ -24,12 +24,12 @@ void mymain09Macro_HPC_multiplicity() {
     // }
 
     // pThat multiplicity
-    TH1F* multiplicity_events = new TH1F("", "Multiplicity of all events;N_{ch};#sigma (mb)", 300, 0, 300);
+    TH1F* multiplicity_events = new TH1F("", "Multiplicity of all events;N_{ch};#sigma (mb)", 150, 0, 300);
 
     vector<TH1F*> pThat_bins_mult(pThat_bins_count);
 
     for (int iBin = 0; iBin < pThat_bins_count; iBin++) {
-        pThat_bins_mult[iBin] = new TH1F(Form("pThat_bin_%d", iBin), "", 300, 0, 300);
+        pThat_bins_mult[iBin] = new TH1F(Form("pThat_bin_%d", iBin), "", 150, 0, 300);
     }
 
     // muon multiplicity
@@ -80,7 +80,7 @@ void mymain09Macro_HPC_multiplicity() {
             int muon_decay_type = static_cast<int>(decayStatus);
 
             if (muon_decay_type == 0 || muon_decay_type == 1 || muon_decay_type == 2) {
-                if (event_mult > 0) {
+                if (event_mult > 1) {
                     pThat_bins_mult_muon[iBin]->Fill(event_mult);
                 }
             }
