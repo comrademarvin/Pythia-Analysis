@@ -28,9 +28,9 @@ int main() {
 
     Pythia pythia;
 
-    pythia.readString("Beams:eCM = 13600.");
+    pythia.readString("Beams:eCM = 5020.");
     pythia.readString("Tune:pp = 14");
-    //pythia.readString("PDF:pSet = 9");
+    pythia.readString("PDF:pSet = 9");
 
     int N_events = 10000;
 
