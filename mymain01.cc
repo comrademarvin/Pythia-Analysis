@@ -32,7 +32,7 @@ int main() {
     pythia.readString("Tune:pp = 14");
     pythia.readString("PDF:pSet = 9");
 
-    int N_events = 10000;
+    int N_events = 5000000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         if (iBin == 0) {
