@@ -13,15 +13,17 @@ void mymain09Macro_HPC_multiplicity() {
     const Int_t NBINS = 12;
     Double_t edges[NBINS + 1] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 16, 20};
 
-    // multiplicity bins
-    // const int mult_bins_count = 4;
-    // int mult_bins[mult_bins_count+1] = {0, 25, 50, 75, 100};
+    // HF muon pt multiplicity bins
+    const int mult_bins_count = 5;
+    int mult_bins[mult_bins_count+1] = {0, 50, 100, 150, 200, 300};
 
-    // vector<TH1F*> muonPt_bins(mult_bins_count);
+    vector<TH1F*> muonPt_bins(mult_bins_count);
+    vector<TH1F*> muonPt_bins_temp(mult_bins_count);
 
-    // for (int iBin = 0; iBin < mult_bins_count; iBin++) {
-    //     muonPt_bins[iBin] = new TH1F(Form("muon_pt_mult_bin_%d", iBin), "", NBINS, edges);
-    // }
+    for (int iMultBin = 0; iMultBin < mult_bins_count; iMultBin++) {
+        muonPt_bins[iMultBin] = new TH1F(Form("muon_pt_mult_bin_%d", iMultBin), "", NBINS, edges);
+        muonPt_bins_temp[iMultBin] = new TH1F(Form("muon_pt_mult_bin_temp_%d", iMultBin), "", NBINS, edges);
+    }
 
     // pThat multiplicity
     TH1F* multiplicity_events = new TH1F("", "Multiplicity of all events;N_{ch};#sigma (mb)", 300, 0, 300);
@@ -70,9 +72,10 @@ void mymain09Macro_HPC_multiplicity() {
 
         // iterate through muons and connect to event multiplicities
         int events_count = muonTuple->GetEntries();
-        Float_t eventIndex, decayStatus;
+        Float_t eventIndex, decayStatus, pt;
         muonTuple->SetBranchAddress("eventTag", &eventIndex);
         muonTuple->SetBranchAddress("decayStatus", &decayStatus);
+        muonTuple->SetBranchAddress("pt", &pt);
 
         for (int iMuon = 0; iMuon < events_count; iMuon++) {
             muonTuple->GetEntry(iMuon);
@@ -80,8 +83,14 @@ void mymain09Macro_HPC_multiplicity() {
             int muon_decay_type = static_cast<int>(decayStatus);
 
             if (muon_decay_type == 0 || muon_decay_type == 1 || muon_decay_type == 2) {
-                if (event_mult > 0) {
+                if (event_mult > 1) {
                     pThat_bins_mult_muon[iBin]->Fill(event_mult);
+
+                    for (int iMultBin = 0; iMultBin < mult_bins_count; iMultBin++) {
+                        if ((event_mult>=mult_bins[iMultBin]) && (event_mult<mult_bins[iMultBin+1])) {
+                            muonPt_bins_temp[iMultBin]->Fill(pt);
+                        }
+                    }
                 }
             }
         }
@@ -90,6 +99,12 @@ void mymain09Macro_HPC_multiplicity() {
         Double_t scaleMuon = pow(10,-9)/(*binLuminocity)[iBin];
         pThat_bins_mult_muon[iBin]->Scale(scaleMuon);
         multiplicity_total->Add(pThat_bins_mult_muon[iBin]);
+
+        Double_t scalePt = 1/(*binLuminocity)[iBin];
+        for (int iMultBin = 0; iMultBin < mult_bins_count; iMultBin++) {
+            muonPt_bins_temp[iMultBin]->Scale(scalePt);
+            muonPt_bins[iMultBin]->Add(muonPt_bins_temp[iMultBin]);
+        }
     }
 
     // Output file
@@ -124,6 +139,19 @@ void mymain09Macro_HPC_multiplicity() {
     legendMuon->Draw("SAME");
 
     canvasMuon->Write();
+
+    // HF muon pt multiplicity bins
+    TCanvas *canvasMultPt = new TCanvas("HF_Muon_mult_bins","HF_Muon_mult_bins");
+
+    auto legendMuonPt = new TLegend();
+    for (int iMultBin = 0; iMultBin < mult_bins_count; iMultBin++) {
+        muonPt_bins[iMultBin]->SetLineColor(iMultBin+1);
+        muonPt_bins[iMultBin]->Draw("SAME");
+        legendMuonPt->AddEntry(muonPt_bins[iMultBin], Form("%d < N_{ch} < %d", static_cast<int>(mult_bins[iMultBin]), static_cast<int>(mult_bins[iMultBin+1])),"l");
+    }
+    legendMuonPt->Draw("SAME");
+
+    canvasMultPt->Write();
 
     delete outFile;
 }
