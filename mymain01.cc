@@ -9,8 +9,8 @@
 using namespace Pythia8;
 
 int main() {
-    static const int nBins = 5;
-    static const double binEdges[nBins+1] = {0.0, 10.0, 30.0, 50.0, 75.0, 100.0};
+    static const int nBins = 1;
+    static const double binEdges[nBins+1] = {0.0, 100.0};
 
     vector<double> binLuminocity(nBins); // luminocity from generated process sigma to calculate cross-sections
 
@@ -28,11 +28,11 @@ int main() {
 
     Pythia pythia;
 
-    pythia.readString("Beams:eCM = 5020.");
+    pythia.readString("Beams:eCM = 13600.");
     pythia.readString("Tune:pp = 14");
-    pythia.readString("PDF:pSet = 9");
+    //pythia.readString("PDF:pSet = 9");
 
-    int N_events = 50000;
+    int N_events = 500000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         if (iBin == 0) {
