@@ -28,11 +28,11 @@ int main() {
 
     Pythia pythia;
 
-    pythia.readString("Beams:eCM = 13600.");
+    pythia.readString("Beams:eCM = 5020.");+
     pythia.readString("Tune:pp = 14");
     //pythia.readString("PDF:pSet = 9");
 
-    int N_events = 500000;
+    int N_events = 2000000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         if (iBin == 0) {
@@ -83,7 +83,7 @@ int main() {
         hardPt->Add(hardPtPart);
     }
 
-    TFile* outFile = new TFile("mymain01.root", "RECREATE");
+    TFile* outFile = new TFile("/mnt/d/Pythia_Results/mymain01.root", "RECREATE");
 
     hardPt->Write();
 
