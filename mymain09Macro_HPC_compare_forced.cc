@@ -11,7 +11,7 @@ void mymain09Macro_HPC_compare_forced() {
     TH1F *muonPtTotal = new TH1F("muon_full","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS, edges);
 
     for(int iBin = 0; iBin < 7; iBin++) {
-        TFile *infile = TFile::Open(Form("HPC_2M_forced_D_D0/mymain09_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("HPC_4M_PDF9/mymain09_%d.root", iBin), "READ");
 
         std::vector<double> *binLuminocity;
         infile->GetObject("luminocity", binLuminocity);
@@ -45,13 +45,13 @@ void mymain09Macro_HPC_compare_forced() {
     }
 
     // Data to compare with
-    TFile *datafile = TFile::Open("Joyful Data/inclusive_muoncross_data.root", "READ");
+    TFile *datafile = TFile::Open("Joyful Data/muon_pt_differential_published.root", "READ");
     TH1F *muonData = new TH1F("muon_data","", NBINS, edges);
     muonData = (TH1F*)datafile->Get("crosssection_graph");
 
-    TFile *FONLLfile = TFile::Open("Joyful Data/total_cross_section_FONNL.root", "READ");
-    TH1F *muonFONLL = new TH1F("muon_fonll","", NBINS, edges);
-    muonFONLL = (TH1F*)FONLLfile->Get("FONLL total");
+    // TFile *FONLLfile = TFile::Open("Joyful Data/total_cross_section_FONNL.root", "READ");
+    // TH1F *muonFONLL = new TH1F("muon_fonll","", NBINS, edges);
+    // muonFONLL = (TH1F*)FONLLfile->Get("FONLL total");
 
     // Output file
     TFile* outFile = new TFile("mymain09Hist_HPC_compare_forced.root", "RECREATE");
@@ -78,8 +78,8 @@ void mymain09Macro_HPC_compare_forced() {
     //muonFONLL->Draw("SAME");
 
     auto legendMuon = new TLegend();
-    legendMuon->AddEntry(muonPtTotal,"Pythia","l");
-    legendMuon->AddEntry(muonData,"Joyful Data","l");
+    legendMuon->AddEntry(muonPtTotal,"Pythia (CTEQ66.00, NLO)","l");
+    legendMuon->AddEntry(muonData,"Published","l");
     //legendMuon->AddEntry(muonFONLL,"FONLL","l");
     legendMuon->Draw("SAME");
 

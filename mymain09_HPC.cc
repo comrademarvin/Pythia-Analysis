@@ -45,11 +45,13 @@ int main(int argc, char *argv[]) {
     TNtuple* muonTuple = new TNtuple("muon", "muon", "binTag:eventTag:pAbs:pt:y:eta:decayStatus:firstMother:lastMother");
 
     // Number of events to generate per bin.
-    int N_events = 2000000;
+    int N_events = 4000000;
 
     int events_run;
     if (softQCD && iBin == 0) {
         events_run = 3*N_events;
+    } else if (iBin == 1) {
+        events_run = 2*N_events;
     } else {
         events_run = N_events;
     }
@@ -70,13 +72,16 @@ int main(int argc, char *argv[]) {
 
     pythia.readString("Beams:eCM = 5020.");
     pythia.readString("Tune:pp = 14");
+
+    // Set PDF
+    pythia.readString("PDF:pSet = 19");
     
     // D+ forced muon decay
     pythia.readString("411:onMode=off");
     pythia.readString("411:onIfAny=13");
     // D0 forced muon decay
-    // pythia.readString("421:onMode=off");
-    // pythia.readString("421:onIfAny=13");
+    pythia.readString("421:onMode=off");
+    pythia.readString("421:onIfAny=13");
 
     pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
     pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
