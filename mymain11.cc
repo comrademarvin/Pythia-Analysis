@@ -15,8 +15,11 @@ int main() {
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
 
+    TH1F *W_rapidity = new TH1F("W_mother_rapidity_sigma","W Mother of Muons Rapidity;y;#frac{d#sigma}{dy} (mb)", 100, -10.0, 10.0);
+    TH1F *W_eta = new TH1F("W_mother_eta_sigma","W Mother of Muons Eta;y;#frac{d#sigma}{d#eta} (mb)", 100, -10.0, 10.0);
+
     TH1F *muonWPt = new TH1F("W_pt_sigma","W+ -> mu;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
-    TH1F *muonWEta = new TH1F("W_eta_sigma","W+ -> mu;#eta;#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, -10.0, 10.0);
+    TH1F *muonWEta = new TH1F("W_eta_sigma","W+ -> mu;#eta;#frac{d#sigma}{d#eta} (mb)", 100, -10.0, 10.0);
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
@@ -75,6 +78,11 @@ int main() {
                     double particleEta = pythia.event[i].eta();
                     muonWPt->Fill(particlePt);
                     muonWEta->Fill(particleEta);
+                    // For W mother
+                    double W_mother_rapidity = pythia.event[motherIndex].y();
+                    double W_mother_eta = pythia.event[motherIndex].eta();
+                    W_rapidity->Fill(W_mother_rapidity);
+                    W_eta->Fill(W_mother_eta);
                 }
             }
         }
@@ -90,10 +98,14 @@ int main() {
     hardPt->Scale(1/luminocity_hard, "width");
     muonWPt->Scale(1/luminocity_hard, "width");
     muonWEta->Scale(1/luminocity_hard, "width");
+    W_rapidity->Scale(1/luminocity_hard, "width");
+    W_eta->Scale(1/luminocity_hard, "width");
 
     hardPt->Write();
     muonWPt->Write();
     muonWEta->Write();
+    W_rapidity->Write();
+    W_eta->Write();
 
     delete outFile;
 
