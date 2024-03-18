@@ -2,6 +2,7 @@
 #include "Pythia8Plugins/PowhegHooks.h"
 #include "TFile.h"
 #include "TH1.h"
+#include <TNtuple.h>
 
 using namespace Pythia8;
 
@@ -9,21 +10,28 @@ int main() {
     // Generator
     Pythia pythia;
 
+    int generatedEvents = 500000;
+
     // ROOT file for histograms
     TFile* outFile = new TFile("mymain11_W+_100k.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
+    vector<double> generatedLuminocity(1);
 
-    TH1F *W_rapidity = new TH1F("W_mother_rapidity_sigma","W Mother of Muons Rapidity;y;#frac{d#sigma}{dy} (mb)", 100, -10.0, 10.0);
-    TH1F *W_eta = new TH1F("W_mother_eta_sigma","W Mother of Muons Eta;y;#frac{d#sigma}{d#eta} (mb)", 100, -10.0, 10.0);
+    // Store muons from W for analysis
+    TNtuple* muonTuple = new TNtuple("muon", "muon", "eventTag:pAbs:pt:y:eta");
 
-    TH1F *muonWPt = new TH1F("W_pt_sigma","W+ -> mu;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
-    TH1F *muonWEta = new TH1F("W_eta_sigma","W+ -> mu;#eta;#frac{d#sigma}{d#eta} (mb)", 100, -10.0, 10.0);
+    // Store charged particles and event charged particle count for multiplicity analysis
+    // TNtuple* chargedTuple = new TNtuple("charged", "charged", "eventTag:pAbs:pt:y:eta");
+    vector<int> multiplicities(generatedEvents, -1);
+
+    // Store W mother for physics kinematics
+    //TNtuple* WMotherTuple = new TNtuple("W_mother", "W_mother", "eventTag:pAbs:pt:y:eta");
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
-    pythia.readString("Beams:LHEF = pwgevents_W_plus_100k.lhe");
+    pythia.readString("Beams:LHEF = pwgevents_W+_500k.lhe");
 
     // Event settings
     pythia.readString("Main:numberOfEvents = 0");
@@ -66,46 +74,54 @@ int main() {
         }
 
         // process the event
-        double pTHat  = pythia.info.pTHat();
 
+        double pTHat  = pythia.info.pTHat();
+        
+        int nCharged = 0;
         for (int i = 0; i < pythia.event.size(); ++i) {
+            if (pythia.event[i].isFinal() && pythia.event[i].isCharged() && (abs(pythia.event[i].eta()) < 1)) {
+                // only consider charged particles in the central barrel region
+                nCharged++;
+            }
+
             int particleID = abs(pythia.event[i].id());
             if (particleID == 13) { // is muon
                 int motherIndex = pythia.event[i].mother1();
                 int firstMotherID = abs(pythia.event[motherIndex].id());
-                if (firstMotherID == 24) { // from W+ decay
+                if (firstMotherID == 24) { // from W decay
+                    // For muon
+                    double particlePAbs = pythia.event[i].pAbs();
                     double particlePt = pythia.event[i].pT();
-                    double particleEta = pythia.event[i].eta();
-                    muonWPt->Fill(particlePt);
-                    muonWEta->Fill(particleEta);
+                    double particleRapidity = pythia.event[i].y();
+                    double particlePseudorapidity = pythia.event[i].eta();
+
+                    muonTuple->Fill(iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity);
+
                     // For W mother
-                    double W_mother_rapidity = pythia.event[motherIndex].y();
-                    double W_mother_eta = pythia.event[motherIndex].eta();
-                    W_rapidity->Fill(W_mother_rapidity);
-                    W_eta->Fill(W_mother_eta);
+                    // double W_mother_rapidity = pythia.event[motherIndex].y();
+                    // double W_mother_eta = pythia.event[motherIndex].eta();
                 }
             }
         }
 
         hardPt->Fill(pTHat);
+        multiplicities[iEvent] = nCharged;
 
         ++iEvent;
     }
 
-    pythia.stat();
+    //pythia.stat();
 
-    double luminocity_hard = iEvent/(pythia.info.sigmaGen());
-    hardPt->Scale(1/luminocity_hard, "width");
-    muonWPt->Scale(1/luminocity_hard, "width");
-    muonWEta->Scale(1/luminocity_hard, "width");
-    W_rapidity->Scale(1/luminocity_hard, "width");
-    W_eta->Scale(1/luminocity_hard, "width");
+    double luminocity = iEvent/(pythia.info.sigmaGen());
+    generatedLuminocity[0] = luminocity;
 
+    hardPt->Scale(1/luminocity, "width");
     hardPt->Write();
-    muonWPt->Write();
-    muonWEta->Write();
-    W_rapidity->Write();
-    W_eta->Write();
+
+    muonTuple->Write("W_muon");
+    outFile->WriteObject(&generatedLuminocity, "luminocity");
+    outFile->WriteObject(&multiplicities, "event_multiplicity");
+
 
     delete outFile;
 
