@@ -13,7 +13,7 @@ int main() {
     int generatedEvents = 500000;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain11_W+_100k.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11_W-_500k.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
@@ -31,7 +31,7 @@ int main() {
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
-    pythia.readString("Beams:LHEF = pwgevents_W+_500k.lhe");
+    pythia.readString("Beams:LHEF = pwgevents_W-_500k.lhe");
 
     // Event settings
     pythia.readString("Main:numberOfEvents = 0");
@@ -56,7 +56,7 @@ int main() {
     pythia.init();
 
     // Begin event loop; generate until end of LHEF file
-    int iEvent = 0, iError = 0;
+    int iEvent = 0, iError = 0, muonFound = 0;
     while (true) {
         // Generate the next event
         if (!pythia.next()) {
@@ -79,14 +79,36 @@ int main() {
         
         int nCharged = 0;
         for (int i = 0; i < pythia.event.size(); ++i) {
-            if (pythia.event[i].isFinal() && pythia.event[i].isCharged() && (abs(pythia.event[i].eta()) < 1)) {
-                // only consider charged particles in the central barrel region
-                nCharged++;
+            int motherIndex;
+            if (pythia.event[i].isCharged()) {
+                // only consider primary charged particles (According to ALICE's definition of primary)
+                double particleLifetime = (pythia.event[i].tau())/10; // Convert mm/c to cm/c
+                bool isPrimary = true;
+                if (particleLifetime < 1) {
+                    isPrimary = false;
+                } else {
+                    motherIndex = pythia.event[i].mother1();
+                    double motherLifetime;
+                
+                    while (!pythia.event[motherIndex].isQuark() && !pythia.event[motherIndex].isGluon())  {
+                        motherLifetime = (pythia.event[motherIndex].tau())/10;
+                        if (motherLifetime > 1) {
+                            isPrimary = false;
+                            break;
+                        }
+                        motherIndex = pythia.event[motherIndex].mother1();
+                    }
+                }
+
+                // only consider primary charged particles in the central barrel region
+                if (isPrimary && (abs(pythia.event[i].eta()) < 1)) {
+                    nCharged++;
+                }
             }
 
             int particleID = abs(pythia.event[i].id());
             if (particleID == 13) { // is muon
-                int motherIndex = pythia.event[i].mother1();
+                motherIndex = pythia.event[i].mother1();
                 int firstMotherID = abs(pythia.event[motherIndex].id());
                 if (firstMotherID == 24) { // from W decay
                     // For muon
@@ -96,6 +118,7 @@ int main() {
                     double particlePseudorapidity = pythia.event[i].eta();
 
                     muonTuple->Fill(iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity);
+                    muonFound++;
 
                     // For W mother
                     // double W_mother_rapidity = pythia.event[motherIndex].y();
@@ -111,6 +134,9 @@ int main() {
     }
 
     //pythia.stat();
+
+    std::cout << "Count of Events: " << iEvent << std::endl;
+    std::cout << "Count of W->mu found: " << muonFound << std::endl;
 
     double luminocity = iEvent/(pythia.info.sigmaGen());
     generatedLuminocity[0] = luminocity;

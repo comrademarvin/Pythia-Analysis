@@ -9,15 +9,17 @@
 using namespace Pythia8;
 
 int main() {
-    static const int nBins = 1;
-    static const double binEdges[nBins+1] = {0.0, 100.0};
+    static const int nBins = 6;
+    static const double binEdges[nBins+1] = {0.0, 15.0, 30.0, 50.0, 70.0, 100.0, 150.0};
+    // static const int nBins = 1;
+    // static const double binEdges[nBins+1] = {0.0, 150.0};
 
     vector<double> binLuminocity(nBins); // luminocity from generated process sigma to calculate cross-sections
 
     // Histograms
     // Total Cross Section
-    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 100, 0.0, 100.0);
-    TH1F *hardPtPart = new TH1F("hardQCD_part","", 100, 0.0, 100.0);
+    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 150, 0.0, 150.0);
+    TH1F *hardPtPart = new TH1F("hardQCD_part","", 150, 0.0, 150.0);
 
     // HF Cross Sections
     vector<TNtuple*> chargedTuples(nBins);
@@ -28,11 +30,11 @@ int main() {
 
     Pythia pythia;
 
-    pythia.readString("Beams:eCM = 5020.");+
+    pythia.readString("Beams:eCM = 13000.");
     pythia.readString("Tune:pp = 14");
     //pythia.readString("PDF:pSet = 9");
 
-    int N_events = 2000000;
+    int N_events = 10000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         if (iBin == 0) {
@@ -49,6 +51,8 @@ int main() {
 
         hardPtPart->Reset();
 
+        int Event_count = 0;
+
         // event loop
         for (int iEvent = 0; iEvent < N_events; ++iEvent) {
             if (!pythia.next()) continue;
@@ -60,30 +64,55 @@ int main() {
 
             hardPtPart->Fill(pTHat);
 
+            Event_count++;
+
             // iterate through event record
             for (int i = 0; i < pythia.event.size(); ++i) {
-                if (pythia.event[i].isFinal() && pythia.event[i].isCharged()) {
-                    int particleID = pythia.event[i].id();
-                    double particlePAbs = pythia.event[i].pAbs();
-                    double particlePt = pythia.event[i].pT();
-                    double particleRapidity = pythia.event[i].y();
-                    double particlePseudorapidity = pythia.event[i].eta();
-                    double particleCharge = pythia.event[i].charge();
+                if (pythia.event[i].isCharged()) {
+                    // only consider primary charged particles (According to ALICE's definition of primary)
+                    double particleLifetime = (pythia.event[i].tau())/10; // Convert mm/c to cm/c
+                    bool isPrimary = true;
+                    if (particleLifetime < 1) {
+                        isPrimary = false;
+                    } else {
+                        int motherIndex = pythia.event[i].mother1();
+                        double motherLifetime;
+                    
+                        while (!pythia.event[motherIndex].isQuark() && !pythia.event[motherIndex].isGluon())  {
+                            motherLifetime = (pythia.event[motherIndex].tau())/10;
+                            if (motherLifetime > 1) {
+                                isPrimary = false;
+                                break;
+                            }
+                            motherIndex = pythia.event[motherIndex].mother1();
+                        }
+                    }
 
-                    chargedTuples[iBin]->Fill(iBin, iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity, particleID, particleCharge);
+                    // only consider primary charged particles in the central barrel region
+                    double particlePseudorapidity = pythia.event[i].eta();
+
+                    if (isPrimary && (abs(particlePseudorapidity) < 1)) {
+                        int particleID = pythia.event[i].id();
+                        double particlePAbs = pythia.event[i].pAbs();
+                        double particlePt = pythia.event[i].pT();
+                        double particleRapidity = pythia.event[i].y();
+                        double particleCharge = pythia.event[i].charge();
+
+                        chargedTuples[iBin]->Fill(iBin, iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity, particleID, particleCharge);
+                    }
                 }
             }
 
         }
 
-        double luminocity = N_events/(pythia.info.sigmaGen());
-        binLuminocity[iBin] = luminocity;
+        double integrated_luminocity = Event_count/(pythia.info.sigmaGen());
+        binLuminocity[iBin] = integrated_luminocity;
 
-        hardPtPart->Scale(1/luminocity, "width");
+        hardPtPart->Scale(1/integrated_luminocity, "width");
         hardPt->Add(hardPtPart);
     }
 
-    TFile* outFile = new TFile("/mnt/d/Pythia_Results/mymain01.root", "RECREATE");
+    TFile* outFile = new TFile("mymain01.root", "RECREATE");
 
     hardPt->Write();
 
