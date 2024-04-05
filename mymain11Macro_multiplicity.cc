@@ -6,12 +6,16 @@
 #include <TNtuple.h>
 
 void mymain11Macro_multiplicity() {
+    const int rebinFactor = 10;
     // Access Minimum Bias data
-    
+    TFile* infile_mb = TFile::Open("mymain01Macro.root", "READ");
+    TH1F* mb_mult_central = (TH1F*) infile_mb->Get("multiplicity_events_central");
+    TH1F* mb_mult_central_binned = dynamic_cast<TH1F*>(mb_mult_central->Rebin(rebinFactor,"mb_mult_central_binned"));
+    mb_mult_central_binned->Scale(1, "width");
 
     // Access W+/- showered data
-    TFile *infile_plus = TFile::Open("mymain11_W+_500k.root", "READ");
-    TFile *infile_minus = TFile::Open("mymain11_W-_500k.root", "READ");
+    TFile* infile_plus = TFile::Open("mymain11_W+_500k.root", "READ");
+    TFile* infile_minus = TFile::Open("mymain11_W-_500k.root", "READ");
 
     // // Define multiplicity bins
     // const int mult_bin_count = 4;
@@ -21,8 +25,8 @@ void mymain11Macro_multiplicity() {
     TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
     TH2F* W_muon_pt_y_part = new TH2F("W_muon_pt_y_part", "", 100, 0, 200, 100, -10, 10);
 
-    TH1F* W_muon_multiplicity = new TH1F("W_muon_multiplicity", "Multiplicity of W->Muon events;N_{ch};#sigma_{W->#mu} (mb)", 30, 0, 60);
-    TH1F* W_muon_multiplicity_part = new TH1F("W_muon_multiplicity_part", "", 30, 0, 60);
+    TH1F* W_muon_multiplicity = new TH1F("W_muon_multiplicity", "Multiplicity of W->Muon events;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", 60, 0, 60);
+    TH1F* W_muon_multiplicity_part = new TH1F("W_muon_multiplicity_part", "", 60, 0, 60);
     // vector<TH1F*> W_muon_multiplicity_bins(mult_bin_count);
 
     // for (int iBin = 0; iBin < mult_bin_count; iBin++) {
@@ -99,6 +103,7 @@ void mymain11Macro_multiplicity() {
 
     W_muon_multiplicity_part->Scale(1/((*luminocity_minus)[0]), "width");
     W_muon_multiplicity->Add(W_muon_multiplicity_part);
+    TH1F* W_muon_mult_binned = dynamic_cast<TH1F*>(W_muon_multiplicity->Rebin(rebinFactor,"W_muon_mult_binned"));
 
     W_muon_pt_y_part->Scale(1/((*luminocity_minus)[0]), "width");
     W_muon_pt_y->Add(W_muon_pt_y_part);
@@ -111,8 +116,20 @@ void mymain11Macro_multiplicity() {
     canvasMuonPtY->Write();
 
     TCanvas *canvasMuonMult = new TCanvas("Muon_mult","Muon_mult");
-    W_muon_multiplicity->Draw();
+    gPad->SetLogy();
+    mb_mult_central->SetMinimum(0.00000000001);
+    mb_mult_central->Draw("SAME");
+    W_muon_multiplicity->SetMinimum(0.00000000001);
+    W_muon_multiplicity->Draw("SAME");
     canvasMuonMult->Write();
+
+    TCanvas *canvasMultBinned = new TCanvas("mult_binned_ratio","mult_binned_ratio");
+    gPad->SetLogy();
+    mb_mult_central_binned->SetMinimum(0.00000000001);
+    mb_mult_central_binned->Draw("SAME");
+    W_muon_mult_binned->SetMinimum(0.00000000001);
+    W_muon_mult_binned->Draw("SAME");
+    canvasMultBinned->Write();
 
     // TCanvas *canvasMuonPt = new TCanvas("Muon_pt","Muon_pt");
 
