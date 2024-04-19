@@ -5,108 +5,93 @@
 #include "TLatex.h"
 #include <TNtuple.h>
 
+// void processWFile(string filename) {
+
+// }
+
 void mymain11Macro_multiplicity() {
-    const int rebinFactor = 10;
+    const Int_t multBinCount = 6;
+    Double_t multBins[multBinCount+1] = {0, 10, 20, 30, 40, 50, 60};
+
+    const Int_t pTBinCount = 20;
+
     // Access Minimum Bias data
     TFile* infile_mb = TFile::Open("mymain01Macro.root", "READ");
     TH1F* mb_mult_central = (TH1F*) infile_mb->Get("multiplicity_events_central");
-    TH1F* mb_mult_central_binned = dynamic_cast<TH1F*>(mb_mult_central->Rebin(rebinFactor,"mb_mult_central_binned"));
-    mb_mult_central_binned->Scale(1, "width");
 
     // Access W+/- showered data
-    TFile* infile_plus = TFile::Open("mymain11_W+_500k.root", "READ");
-    TFile* infile_minus = TFile::Open("mymain11_W-_500k.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W+_500k.root", "READ");
 
-    // // Define multiplicity bins
-    // const int mult_bin_count = 4;
-    // const int multiplicity_bin_bounds[mult_bin_count+1] = {1, 20, 40, 60, 90};
-
-    // W->muon distributions (pt+y, event multiplicities, multiplicity bins)
+    // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
-    TH2F* W_muon_pt_y_part = new TH2F("W_muon_pt_y_part", "", 100, 0, 200, 100, -10, 10);
+    TH1F* W_muon_multiplicity = new TH1F("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins);
 
-    TH1F* W_muon_multiplicity = new TH1F("W_muon_multiplicity", "Multiplicity of W->Muon events;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", 60, 0, 60);
-    TH1F* W_muon_multiplicity_part = new TH1F("W_muon_multiplicity_part", "", 60, 0, 60);
-    // vector<TH1F*> W_muon_multiplicity_bins(mult_bin_count);
-
-    // for (int iBin = 0; iBin < mult_bin_count; iBin++) {
-    //     W_muon_multiplicity_bins[iBin] = new TH1F(Form("W_muon_mult_bin_%d", iBin), "", 50, 0, 100);
-    // }
+    vector<TH1F*> W_muon_pt_mult_binned(multBinCount);
+    for (int iBin = 0; iBin < multBinCount; iBin++) {
+        W_muon_pt_mult_binned[iBin] = new TH1F(Form("W_muon_pt_%d", iBin), "Muon Yield; p_{T}; N", pTBinCount, 10, 60);
+    }
 
     // Read in generated cross-section as integrated luminocity
-    std::vector<double> *luminocity_plus;
-    infile_plus->GetObject("luminocity", luminocity_plus);
-
-    std::vector<double> *luminocity_minus;
-    infile_minus->GetObject("luminocity", luminocity_minus);
+    std::vector<double> *luminocity;
+    infile->GetObject("luminocity", luminocity);
 
     // Read in multiplicities of events
-    std::vector<int> *event_mult_plus;
-    infile_plus->GetObject("event_multiplicity", event_mult_plus);
-    int event_count_plus = event_mult_plus->size();
-
-    std::vector<int> *event_mult_minus;
-    infile_minus->GetObject("event_multiplicity", event_mult_minus);
-    int event_count_minus = event_mult_minus->size();
+    std::vector<int> *event_mult;
+    infile->GetObject("event_multiplicity", event_mult);
+    int event_count = event_mult->size();
 
     // iterate through muons and connect to event multiplicities
     // For W+ -> muon
-    TNtuple *muonTuple_plus = (TNtuple*)infile_plus->Get("W_muon");
-    int muons_count = muonTuple_plus->GetEntries();
+    TNtuple *muonTuple = (TNtuple*)infile->Get("W_muon");
+    int muons_count = muonTuple->GetEntries();
     Float_t eventIndex, eta, pt, rapidity;
-    muonTuple_plus->SetBranchAddress("eventTag", &eventIndex);
-    muonTuple_plus->SetBranchAddress("y", &rapidity);
-    muonTuple_plus->SetBranchAddress("eta", &eta);
-    muonTuple_plus->SetBranchAddress("pt", &pt);
+    muonTuple->SetBranchAddress("eventTag", &eventIndex);
+    muonTuple->SetBranchAddress("y", &rapidity);
+    muonTuple->SetBranchAddress("eta", &eta);
+    muonTuple->SetBranchAddress("pt", &pt);
 
     for (int iMuon = 0; iMuon < muons_count; iMuon++) {
-        muonTuple_plus->GetEntry(iMuon);
-        W_muon_pt_y_part->Fill(pt, rapidity);
-        int muon_event_mult = (*event_mult_plus)[static_cast<int>(eventIndex)];
-        W_muon_multiplicity_part->Fill(muon_event_mult/2);
-        // if ((eta >= 2.5) && (eta <= 4)) {
-        //     int muon_event_mult = (*event_mult)[static_cast<int>(eventIndex)];
-        //     W_muon_multiplicity->Fill(muon_event_mult);
+        muonTuple->GetEntry(iMuon);
+        W_muon_pt_y->Fill(pt, rapidity);
+        int muon_event_mult = (*event_mult)[static_cast<int>(eventIndex)];
+        W_muon_multiplicity->Fill(muon_event_mult/2);
 
-        //     // bin in multiplicity classes
-        //     for (int iBin = 0; iBin < mult_bin_count; iBin++) {
-        //         if ((muon_event_mult > multiplicity_bin_bounds[iBin]) && (muon_event_mult <= multiplicity_bin_bounds[iBin+1])) {
-        //             W_muon_multiplicity_bins[iBin]->Fill(pt);
-        //             break;
-        //         }
-        //     }
-        // }
+        if ((rapidity >= 2.5) && (rapidity <= 4)) {
+            for (int iBin = 0; iBin < multBinCount; iBin++) {
+                if ((muon_event_mult > multBins[iBin]) && (muon_event_mult < multBins[iBin+1])) {
+                    W_muon_pt_mult_binned[iBin]->Fill(pt);
+                }
+            }
+        }
     };
 
-    W_muon_multiplicity_part->Scale(1/((*luminocity_plus)[0]), "width");
-    W_muon_multiplicity->Add(W_muon_multiplicity_part);
+    // Cross Section Scaling
+    W_muon_multiplicity->Scale(1/((*luminocity)[0]), "width");
+    W_muon_pt_y->Scale(1/((*luminocity)[0]), "width");
 
-    W_muon_pt_y_part->Scale(1/((*luminocity_plus)[0]), "width");
-    W_muon_pt_y->Add(W_muon_pt_y_part);
+    // Compute the multiplicity dependant yield
 
-    // For W- -> muon
-    TNtuple *muonTuple_minus = (TNtuple*)infile_minus->Get("W_muon");
-    muons_count = muonTuple_minus->GetEntries();
-    muonTuple_minus->SetBranchAddress("eventTag", &eventIndex);
-    muonTuple_minus->SetBranchAddress("y", &rapidity);
-    muonTuple_minus->SetBranchAddress("eta", &eta);
-    muonTuple_minus->SetBranchAddress("pt", &pt);
-    W_muon_multiplicity_part->Reset();
-    W_muon_pt_y_part->Reset();
+    // Cross section ratio multiplicity binned
+    TH1F* cs_ratio = new TH1F();
 
-    for (int iMuon = 0; iMuon < muons_count; iMuon++) {
-        muonTuple_minus->GetEntry(iMuon);
-        W_muon_pt_y_part->Fill(pt, rapidity);
-        int muon_event_mult = (*event_mult_minus)[static_cast<int>(eventIndex)];
-        W_muon_multiplicity_part->Fill(muon_event_mult/2);
-    };
+    *cs_ratio = (*mb_mult_central)/(*W_muon_multiplicity);
 
-    W_muon_multiplicity_part->Scale(1/((*luminocity_minus)[0]), "width");
-    W_muon_multiplicity->Add(W_muon_multiplicity_part);
-    TH1F* W_muon_mult_binned = dynamic_cast<TH1F*>(W_muon_multiplicity->Rebin(rebinFactor,"W_muon_mult_binned"));
+    for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
+        W_muon_pt_mult_binned[iMultBin]->Scale(1/(cs_ratio->GetBinContent(iMultBin+1)));
+    }
 
-    W_muon_pt_y_part->Scale(1/((*luminocity_minus)[0]), "width");
-    W_muon_pt_y->Add(W_muon_pt_y_part);
+    // Determine yield of W->muon as function of multiplicity
+    // TODO: Scale event count by minimum bias
+    TProfile* multProfile = new TProfile("mult_prof","Profile of yield versus multiplicity", multBinCount, multBins);
+
+    for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
+        double multBinAverage = multBins[iMultBin] + ((multBins[iMultBin+1] - multBins[iMultBin])/2);
+        std::cout << multBinAverage << std::endl;
+        for (int iPtBin = 1; iPtBin <= pTBinCount; iPtBin++) {
+            double yield_pt_bin = (W_muon_pt_mult_binned[iMultBin])->GetBinContent(iPtBin);
+            multProfile->Fill(multBinAverage, yield_pt_bin, 1);
+        }
+    }
 
     // Output file
     TFile* outFile = new TFile("mymain11Hist_multiplicity.root", "RECREATE");
@@ -118,31 +103,45 @@ void mymain11Macro_multiplicity() {
     TCanvas *canvasMuonMult = new TCanvas("Muon_mult","Muon_mult");
     gPad->SetLogy();
     mb_mult_central->SetMinimum(0.00000000001);
+    mb_mult_central->SetLineColor(1);
     mb_mult_central->Draw("SAME");
     W_muon_multiplicity->SetMinimum(0.00000000001);
     W_muon_multiplicity->Draw("SAME");
+    auto legendMult = new TLegend();
+    legendMult->AddEntry(mb_mult_central,"Minimum Bias","l");
+    legendMult->AddEntry(W_muon_multiplicity,"W->#mu","l");
+    legendMult->Draw("SAME");
     canvasMuonMult->Write();
 
     TCanvas *canvasMultBinned = new TCanvas("mult_binned_ratio","mult_binned_ratio");
     gPad->SetLogy();
-    mb_mult_central_binned->SetMinimum(0.00000000001);
-    mb_mult_central_binned->Draw("SAME");
-    W_muon_mult_binned->SetMinimum(0.00000000001);
-    W_muon_mult_binned->Draw("SAME");
+    cs_ratio->SetStats(0);
+    //cs_ratio->SetMinimum(0.00000001);
+    cs_ratio->SetTitle("Ratio of W muon Cross Section wrt Minimum Bias");
+    cs_ratio->GetYaxis()->SetTitle("#sigma_{MB}/#sigma_{W->#mu}");
+    cs_ratio->Draw();
+    // mb_mult_central_binned->SetMinimum(0.000000000001);
+    // mb_mult_central_binned->Draw("SAME");
+    // W_muon_mult_binned->SetMinimum(0.000000000001);
+    // W_muon_mult_binned->Draw("SAME");
     canvasMultBinned->Write();
 
-    // TCanvas *canvasMuonPt = new TCanvas("Muon_pt","Muon_pt");
+    TCanvas *canvasYieldBinned = new TCanvas("pt_yield_mult_binned","pt_yield_mult_binned");
+    gPad->SetLogy();
+    auto legendPtBins = new TLegend();
+    for (int iBin = 0; iBin < multBinCount; iBin++) {
+        W_muon_pt_mult_binned[iBin]->SetLineColor(iBin);
+        W_muon_pt_mult_binned[iBin]->Draw("SAME");
+        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%f < N_{ch} < %f", multBins[iBin], multBins[iBin+1]),"l");
+    }
+    // auto labelCuts = new TLatex();
+    // labelCuts->DrawLatex(0.0, 0.0, "2.5 < y < 4");
+    // labelCuts->Draw("SAME");
+    canvasYieldBinned->Write();
 
-    // auto legendMuonPt = new TLegend();
-    // for (int iBin = 0; iBin < mult_bin_count; iBin++) {
-    //     W_muon_multiplicity_bins[iBin]->Scale(1/((*luminocity)[0]), "width");
-    //     W_muon_multiplicity_bins[iBin]->SetLineColor(iBin+1);
-    //     W_muon_multiplicity_bins[iBin]->Draw("SAME");
-    //     legendMuonPt->AddEntry(W_muon_multiplicity_bins[iBin], Form("%d < N_{ch} <= %d", static_cast<int>(multiplicity_bin_bounds[iBin]), static_cast<int>(multiplicity_bin_bounds[iBin+1])),"l");
-    // }
-    // legendMuonPt->Draw("SAME");
-
-    // canvasMuonPt->Write();
+    TCanvas *canvasYieldMultDep = new TCanvas("yield_mult_dep","yield_mult_dep");
+    multProfile->Draw();
+    canvasYieldMultDep->Write();
 
     delete outFile;
 };
