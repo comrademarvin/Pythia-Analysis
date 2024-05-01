@@ -14,17 +14,25 @@ void mymain11Macro_multiplicity() {
     Double_t multBins[multBinCount+1] = {0, 10, 20, 30, 40, 50, 60};
 
     const Int_t pTBinCount = 20;
+    Double_t multBinsAverage[multBinCount+1];
 
     // Access Minimum Bias data
     TFile* infile_mb = TFile::Open("mymain01Macro.root", "READ");
-    TH1F* mb_mult_central = (TH1F*) infile_mb->Get("multiplicity_events_central");
+    TH1D* mb_mult_central = (TH1D*) infile_mb->Get("multiplicity_events_central");
+
+    // normalise charged particle multiplicity by the average
+    float mb_mult_average = mb_mult_central->GetMean();
+    for (int iMultBin = 0; iMultBin < multBinCount+1; iMultBin++) {
+        multBinsAverage[iMultBin] = multBins[iMultBin]/mb_mult_average;
+    } 
 
     // Access W+/- showered data
     TFile* infile = TFile::Open("mymain11_W+_500k.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
-    TH1F* W_muon_multiplicity = new TH1F("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins);
+    TH1D* W_muon_multiplicity = new TH1D("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins);
+    TH1D* W_muon_yield_mult = new TH1D("W_muon_yield_mult", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};N", multBinCount, multBinsAverage);
 
     vector<TH1F*> W_muon_pt_mult_binned(multBinCount);
     for (int iBin = 0; iBin < multBinCount; iBin++) {
@@ -56,10 +64,13 @@ void mymain11Macro_multiplicity() {
         int muon_event_mult = (*event_mult)[static_cast<int>(eventIndex)];
         W_muon_multiplicity->Fill(muon_event_mult/2);
 
-        if ((rapidity >= 2.5) && (rapidity <= 4)) {
+        if ((rapidity >= 2.5) && (rapidity <= 4) && (pt >= 10) && (pt <= 60)) {
+            double event_mult_average_norm = muon_event_mult/(2*mb_mult_average);
+            W_muon_yield_mult->Fill(event_mult_average_norm);
             for (int iBin = 0; iBin < multBinCount; iBin++) {
-                if ((muon_event_mult > multBins[iBin]) && (muon_event_mult < multBins[iBin+1])) {
+                if ((event_mult_average_norm > multBinsAverage[iBin]) && (event_mult_average_norm < multBinsAverage[iBin+1])) {
                     W_muon_pt_mult_binned[iBin]->Fill(pt);
+                    break;
                 }
             }
         }
@@ -72,26 +83,31 @@ void mymain11Macro_multiplicity() {
     // Compute the multiplicity dependant yield
 
     // Cross section ratio multiplicity binned
-    TH1F* cs_ratio = new TH1F();
+    TH1D* cs_ratio = new TH1D();
 
     *cs_ratio = (*mb_mult_central)/(*W_muon_multiplicity);
 
-    for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
-        W_muon_pt_mult_binned[iMultBin]->Scale(1/(cs_ratio->GetBinContent(iMultBin+1)));
-    }
+    TH1D* W_muon_yield_mult_mb = new TH1D();
+    *W_muon_yield_mult_mb = (*W_muon_yield_mult)/(*cs_ratio); // normalise yield by mb ratio
 
     // Determine yield of W->muon as function of multiplicity
-    // TODO: Scale event count by minimum bias
-    TProfile* multProfile = new TProfile("mult_prof","Profile of yield versus multiplicity", multBinCount, multBins);
+    TProfile* multProfile = new TProfile("mult_prof","Profile of yield versus multiplicity", multBinCount, multBinsAverage);
 
     for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
-        double multBinAverage = multBins[iMultBin] + ((multBins[iMultBin+1] - multBins[iMultBin])/2);
-        std::cout << multBinAverage << std::endl;
+        double multBinCenter = multBinsAverage[iMultBin] + ((multBinsAverage[iMultBin+1] - multBinsAverage[iMultBin])/2);
+        // scale the pt bin by mb ratio and number of entries
+        //W_muon_pt_mult_binned[iMultBin]->Scale(W_muon_pt_mult_binned[iMultBin]->GetEntries());
+        //W_muon_pt_mult_binned[iMultBin]->Scale(1/(cs_ratio->GetBinContent(iMultBin+1)));
         for (int iPtBin = 1; iPtBin <= pTBinCount; iPtBin++) {
             double yield_pt_bin = (W_muon_pt_mult_binned[iMultBin])->GetBinContent(iPtBin);
-            multProfile->Fill(multBinAverage, yield_pt_bin, 1);
+            multProfile->Fill(multBinCenter, yield_pt_bin, 1);
         }
     }
+
+    TH1D* W_muon_yield_average = multProfile->ProjectionX("yield_average");
+
+    TH1D* W_muon_norm_yield_mult = new TH1D();
+    *W_muon_norm_yield_mult = (*W_muon_yield_mult)/(*W_muon_yield_average); // normalise yield by pt average
 
     // Output file
     TFile* outFile = new TFile("mymain11Hist_multiplicity.root", "RECREATE");
@@ -139,8 +155,12 @@ void mymain11Macro_multiplicity() {
     // labelCuts->Draw("SAME");
     canvasYieldBinned->Write();
 
-    TCanvas *canvasYieldMultDep = new TCanvas("yield_mult_dep","yield_mult_dep");
+    TCanvas *canvasYieldAverage = new TCanvas("yield_mult_average","yield_mult_average");
     multProfile->Draw();
+    canvasYieldAverage->Write();
+
+    TCanvas *canvasYieldMultDep = new TCanvas("yield_mult_dep","yield_mult_dep");
+    W_muon_norm_yield_mult->Draw();
     canvasYieldMultDep->Write();
 
     delete outFile;
