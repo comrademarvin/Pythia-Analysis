@@ -8,11 +8,11 @@ void mymain01Macro() {
     // pT-hat bins
     static const int nBins = 6;
     static const double binEdges[nBins+1] = {0.0, 15.0, 30.0, 50.0, 70.0, 100.0, 150.0};
-    const Int_t multBinCount = 6;
-    Double_t multBins[multBinCount+1] = {0, 10, 20, 30, 40, 50, 60};
+    const Int_t multBinCount = 5;
+    Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
 
     // pThat multiplicity
-    TH1D* multiplicity_events_central = new TH1D("multiplicity_events_central", "Central Barrel Primary Charged Particle Integrated Multiplicity;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", multBinCount, multBins);
+    TH1D* multiplicity_events_central = new TH1D("multiplicity_events_central", "Integrated Primary Charged Particle Multiplicity Dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", multBinCount, multBins);
     TH1D* multiplicity_events_central_part = new TH1D("multiplicity_events_central_part", "", multBinCount, multBins);
     //TH1F* multiplicity_events_MFT = new TH1F("multiplicity_events_MFT", "", 140, 0, 140);
     //TH1F* multiplicity_events_Muon = new TH1F("multiplicity_events_Muon", "", 140, 0, 140);
