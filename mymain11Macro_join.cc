@@ -17,6 +17,7 @@ void mymain11Macro_join() {
     // Access Minimum Bias data
     TFile* infile_mb = TFile::Open("mymain01Macro.root", "READ");
     TH1D* mb_mult_central = (TH1D*) infile_mb->Get("multiplicity_events_central");
+    TH1D* mb_mult_central_raw = (TH1D*) infile_mb->Get("multiplicity_events_central_raw");
 
     // normalise charged particle multiplicity by the average
     float mb_mult_average = mb_mult_central->GetMean();
@@ -35,6 +36,12 @@ void mymain11Macro_join() {
     W_muon_pt->Add(W_muon_pt_minus);
 
     // multiplicity
+    // full cross-section not normalised multiplicity, display bins
+    TH1D* W_muon_mult_raw_plus = (TH1D*)infile_W_plus->Get("W_muon_mult_raw");
+    TH1D* W_muon_mult_raw_minus = (TH1D*)infile_W_minus->Get("W_muon_mult_raw");
+    TH1D* W_muon_mult_raw = new TH1D(*W_muon_mult_raw_plus);
+    W_muon_mult_raw->Add(W_muon_mult_raw_minus);
+
     // full cross-section
     TH1D* W_muon_mult_plus = (TH1D*)infile_W_plus->Get("W_muon_mult");
     TH1D* W_muon_mult_minus = (TH1D*)infile_W_minus->Get("W_muon_mult");
@@ -89,12 +96,42 @@ void mymain11Macro_join() {
 
     // kinematics
     TCanvas *canvasMuonPt = new TCanvas("W_muon_pt","W_muon_pt");
+    gPad->SetLogy();
+    W_muon_pt->SetTitle("Vector Boson Muon Decay p_{T}-differential Cross-Section;p_{T} GeV/c;d#sigma/dp_{T} (mb GeV^{-1} c)");
+    // W_muon_pt->
+    // W_muon_pt->GetYaxis()->SetTitle("d#sigma/dp_{T}");
     W_muon_pt->Draw("SAME");
+    W_muon_pt->SetLineColor(1);
     W_muon_pt_plus->Draw("SAME");
     W_muon_pt_minus->Draw("SAME");
+    W_muon_pt_minus->SetLineColor(3);
+    auto legendPt = new TLegend();
+    legendPt->AddEntry(W_muon_pt,"W -> #mu","l");
+    legendPt->AddEntry(W_muon_pt_plus,"W+ -> #mu^{+}","l");
+    legendPt->AddEntry(W_muon_pt_minus,"W- -> #mu^{-}","l");
+    legendPt->Draw("SAME");
+    auto labelCuts = new TLatex();
+    labelCuts->DrawLatex(0.0, 0.0, "POWHEG pp @ #sqrt{s} = 5.02 TeV");
+    labelCuts->DrawLatex(0.0, 0.0, "2.5 < y < 4");
+    labelCuts->Draw("SAME");
     canvasMuonPt->Write();
 
     // multiplicity
+    // full cross-section not normalised multiplicity, display bins
+    TCanvas *canvasMuonMultRaw = new TCanvas("W_muon_mult_raw","W_muon_mult_raw");
+    gPad->SetLogy();
+    mb_mult_central_raw->SetMinimum(0.000000000001);
+    mb_mult_central_raw->SetStats(0);
+    mb_mult_central_raw->Draw("SAME");
+    W_muon_mult_raw->SetLineColor(1);
+    W_muon_mult_raw->SetStats(0);
+    W_muon_mult_raw->Draw("SAME");
+    auto legendMultRaw = new TLegend();
+    legendMultRaw->AddEntry(mb_mult_central_raw,"Minimum Bias (|#eta| < 1.0)","l");
+    legendMultRaw->AddEntry(W_muon_mult_raw,"W -> #mu","l");
+    legendMultRaw->Draw("SAME");
+    canvasMuonMultRaw->Write();
+
     // full cross-section
     TCanvas *canvasMuonMult = new TCanvas("W_muon_mult","W_muon_mult");
     W_muon_mult->Draw("SAME");
@@ -116,12 +153,15 @@ void mymain11Macro_join() {
 
     // pt yield mult binned normalised
     TCanvas *canvasMuonPtBins = new TCanvas("W_muon_pt_mult_binned","W_muon_pt_mult_binned");
+    auto legendPtBins = new TLegend();
     for (int iBin = 0; iBin < multBinCount; iBin++) {
         W_muon_pt_mult_binned[iBin]->SetStats(0);
         W_muon_pt_mult_binned[iBin]->SetMinimum(0.00001);
         W_muon_pt_mult_binned[iBin]->SetLineColor(iBin+1);
         W_muon_pt_mult_binned[iBin]->Draw("SAME");
+        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%d <= N_{ch} < %d", (int)multBins[iBin], (int)multBins[iBin+1]),"l");
     }
+    legendPtBins->Draw("SAME");
     canvasMuonPtBins->Write();
 
     // profile average per mult bin
@@ -132,20 +172,20 @@ void mymain11Macro_join() {
     // self-normalised mult dependence
     TCanvas *canvasYieldMultDep = new TCanvas("yield_mult_dep","yield_mult_dep");
     W_muon_norm_yield_mult->SetTitle("Self Normalised Charged Particle Dependence of W->muon");
-    W_muon_norm_yield_mult->GetYaxis()->SetTitle("#frac{d^{2}N}{dp_{T}dy}/<#frac{d^{2}N}{dp_{T}dy}>");
+    W_muon_norm_yield_mult->GetYaxis()->SetTitle("#frac{d^{2}#sigma}{dp_{T}dy}/<#frac{d^{2}#sigma}{dp_{T}dy}>");
     W_muon_norm_yield_mult->SetStats(0);
     // fit straight line
     TF1* fitLinear = new TF1("fitLinear", "pol1");
     W_muon_norm_yield_mult->Fit("fitLinear");
     W_muon_norm_yield_mult->Draw();
-    // add plot of y=x
-    double y[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-    double x[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-    auto gLine = new TGraph(8, x, y);
-    gLine->Draw("SAME");
+    // // add plot of y=x
+    // double y[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+    // double x[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+    // auto gLine = new TGraph(8, x, y);
+    // gLine->Draw("SAME");
     auto legendLinear = new TLegend();
     legendLinear->AddEntry(fitLinear, "Linear Best Fit");
-    legendLinear->AddEntry(gLine, "y=x", "l");
+    //legendLinear->AddEntry(gLine, "y=x", "l");
     legendLinear->Draw("SAME");
     canvasYieldMultDep->Write();
 

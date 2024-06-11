@@ -32,17 +32,18 @@ void mymain11Macro_multiplicity() {
     } 
 
     // Access W+/- showered data
-    TFile* infile = TFile::Open("mymain11_W+_5M.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W-_5M.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 60, 0, 120);
     TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
+    TH1D* W_muon_mult_raw = new TH1D("W_muon_mult_raw", "Primary charged particle dependence;N_{ch};#sigma_{W->#mu} (mb)", 50, 0, 100);
     TH1D* W_muon_multiplicity = new TH1D("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins);
     TH1D* W_muon_yield_mult = new TH1D("W_muon_yield_mult", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1}/<dN_{ch}/d#eta>;#frac{d^{2}N}{dp_{T}dy}", multBinCount, multBinsAverage);
 
     vector<TH1D*> W_muon_pt_mult_binned(multBinCount);
     for (int iBin = 0; iBin < multBinCount; iBin++) {
-        W_muon_pt_mult_binned[iBin] = new TH1D(Form("W_muon_pt_%d", iBin), "Muon Yield per Multiplicity bin; p_{T}; #frac{1}{N_{W}}#frac{d^{2}N_{W}}{dp_{T}dy}", pTBinCount, pTBinMin, pTBinMax);
+        W_muon_pt_mult_binned[iBin] = new TH1D(Form("W_muon_pt_%d", iBin), "Muon Yield per Multiplicity bin; p_{T}; #frac{1}{#sigma_{W}}#frac{d^{2}#sigma}{dp_{T}dy}", pTBinCount, pTBinMin, pTBinMax);
     }
 
     // Read in generated cross-section as integrated luminocity
@@ -68,6 +69,7 @@ void mymain11Macro_multiplicity() {
         muonTuple->GetEntry(iMuon);
         W_muon_pt_y->Fill(pt, rapidity);
         int muon_event_mult = (*event_mult)[static_cast<int>(eventIndex)];
+        W_muon_mult_raw->Fill(muon_event_mult);
         W_muon_multiplicity->Fill(muon_event_mult/2);
 
         // kinematics
@@ -89,6 +91,7 @@ void mymain11Macro_multiplicity() {
     };
 
     // Cross Section Scaling
+    W_muon_mult_raw->Scale(1/((*luminocity)[0]), "width");
     W_muon_multiplicity->Scale(1/((*luminocity)[0]), "width");
     W_muon_pt->Scale(1/((*luminocity)[0]), "width");
     W_muon_pt_y->Scale(1/((*luminocity)[0]), "width");
@@ -215,12 +218,13 @@ void mymain11Macro_multiplicity() {
     delete outFile;
 
     // save histograms to join W+/- analysis
-    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_plus.root", "RECREATE");
+    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_minus.root", "RECREATE");
 
     // kinematics
     W_muon_pt->Write();
 
     // multiplicity dependence
+    W_muon_mult_raw->Write("W_muon_mult_raw");
     W_muon_multiplicity->Write("W_muon_mult");
     cs_ratio->Write("cs_ratio");
     W_muon_yield_mult->Write("W_muon_yield_mult");

@@ -14,6 +14,10 @@ void mymain01Macro() {
     // pThat multiplicity
     TH1D* multiplicity_events_central = new TH1D("multiplicity_events_central", "Integrated Primary Charged Particle Multiplicity Dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", multBinCount, multBins);
     TH1D* multiplicity_events_central_part = new TH1D("multiplicity_events_central_part", "", multBinCount, multBins);
+
+    TH1D* multiplicity_events_central_raw = new TH1D("multiplicity_events_central_raw", "Primary Charged Particle Multiplicity Dependence;N_{ch};#sigma (mb)", 50, 0, 100);
+    TH1D* multiplicity_events_central_raw_part = new TH1D("multiplicity_events_central_raw_part", "", 50, 0, 100);
+
     //TH1F* multiplicity_events_MFT = new TH1F("multiplicity_events_MFT", "", 140, 0, 140);
     //TH1F* multiplicity_events_Muon = new TH1F("multiplicity_events_Muon", "", 140, 0, 140);
 
@@ -34,6 +38,7 @@ void mymain01Macro() {
         TNtuple *chargedTuple = (TNtuple*)infile->Get(Form("charged%d", iBin));
 
         multiplicity_events_central_part->Reset();
+        multiplicity_events_central_raw_part->Reset();
 
         int particle_count = chargedTuple->GetEntries();
         Float_t eventIndex, eta, pAbs, id, pt;
@@ -52,7 +57,8 @@ void mymain01Macro() {
             chargedTuple->GetEntry(iParticle);
             if (eventIndex != event_counter) {
                 if (multiplicity_count_central > 0) {
-                    multiplicity_events_central_part->Fill(multiplicity_count_central/2); 
+                    multiplicity_events_central_part->Fill(multiplicity_count_central/2);
+                    multiplicity_events_central_raw_part->Fill(multiplicity_count_central);
                 }
                 // if (multiplicity_count_MFT > 0) {
                 //     multiplicity_events_MFT->Fill(multiplicity_count_MFT); 
@@ -81,6 +87,7 @@ void mymain01Macro() {
         }
         if (multiplicity_count_central > 0) {
             multiplicity_events_central_part->Fill(multiplicity_count_central/2);
+            multiplicity_events_central_raw_part->Fill(multiplicity_count_central);
         }
         // if (multiplicity_count_MFT > 0) {
         //     multiplicity_events_MFT->Fill(multiplicity_count_MFT); 
@@ -94,6 +101,9 @@ void mymain01Macro() {
         //multiplicity_events->Add(pThat_bins_mult[iBin]);
         multiplicity_events_central_part->Scale(scaleBin, "width");
         multiplicity_events_central->Add(multiplicity_events_central_part);
+
+        multiplicity_events_central_raw_part->Scale(scaleBin, "width");
+        multiplicity_events_central_raw->Add(multiplicity_events_central_raw_part);
         // multiplicity_events_MFT->Scale(scaleBin, "width");
         // multiplicity_events_Muon->Scale(scaleBin, "width");
     }
@@ -106,6 +116,9 @@ void mymain01Macro() {
 
     multiplicity_events_central->Draw();
     multiplicity_events_central->Write();
+
+    multiplicity_events_central_raw->Draw();
+    multiplicity_events_central_raw->Write();
 
     delete outFile;
 
