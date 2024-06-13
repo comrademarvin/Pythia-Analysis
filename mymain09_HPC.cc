@@ -1,4 +1,5 @@
 #include "Pythia8/Pythia.h"
+#include "Pythia8/PythiaParallel.h"
 #include "TH1.h"
 #include "TFile.h"
 #include "TCanvas.h"
@@ -17,7 +18,7 @@ int main(int argc, char *argv[]) {
     bool softQCD = true;
 
     // Pythia object
-    Pythia pythia;
+    PythiaParallel pythia; // generate events in parallel
 
     // ROOT file for histograms
     TFile* outFile = new TFile(Form("mymain09_HPC_root/mymain09_%d.root", iBin), "RECREATE");
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
     TNtuple* muonTuple = new TNtuple("muon", "muon", "binTag:eventTag:pAbs:pt:y:eta:decayStatus:firstMother:lastMother");
 
     // Number of events to generate per bin.
-    int N_events = 4000000;
+    int N_events = 1000000;
 
     int events_run;
     if (softQCD && iBin == 0) {
@@ -70,11 +71,12 @@ int main(int argc, char *argv[]) {
         pythia.readString("SoftQCD:nonDiffractive = off");
     }
 
-    pythia.readString("Beams:eCM = 5020.");
-    pythia.readString("Tune:pp = 14");
+    pythia.readString("Beams:eCM = 5360.");
+    pythia.readString("Tune:pp = 14"); // Monash tune
+    pythia.readString("Parallelism:numThreads = 10");
 
     // Set PDF
-    pythia.readString("PDF:pSet = 8");
+    //pythia.readString("PDF:pSet = 8");
     
     // D+ forced muon decay
     pythia.readString("411:onMode=off");
@@ -85,17 +87,24 @@ int main(int argc, char *argv[]) {
 
     pythia.settings.parm("PhaseSpace:pTHatMin", binEdges[iBin]);
     pythia.settings.parm("PhaseSpace:pTHatMax", binEdges[iBin + 1]);
-    pythia.init();
+
+    if (!pythia.init()) return 1;	//initiate pythia and output an error if it doesn't initiate.
 
     int eventCount = 0;
 
-    for (int iEvent = 0; iEvent < events_run; ++iEvent) {
-        if (!pythia.next()) continue;
+    // for (int iEvent = 0; iEvent < events_run; ++iEvent) {
+    //     if (!pythia.next()) continue;
+    int iEvent = 0;
+    pythia.run(events_run, [&](Pythia* pythiaPtr)
+	{
+		// giving reference to the instance that generated the event.
+		Event& event = pythiaPtr->event; 
+		const Info& info = pythiaPtr->info;
 
-        double pTHat  = pythia.info.pTHat();
+        double pTHat  = info.pTHat();
 
-        if (softQCD && iBin == 0 && pythia.info.isNonDiffractive()
-        && pTHat > binEdges[iBin+1]) continue;
+        if (softQCD && iBin == 0 && info.isNonDiffractive()
+        && pTHat > binEdges[iBin+1]) return;
 
         //if (pTHat < binEdges[iBin]) continue;
 
@@ -107,44 +116,70 @@ int main(int argc, char *argv[]) {
 
         int multCount = 0;
 
-        for (int i = 0; i < pythia.event.size(); ++i) {
-            if (pythia.event[i].isFinal() && pythia.event[i].isCharged()) multCount++;
+        for (int i = 0; i < event.size(); ++i) {
+            // primary charged particle multiplicity for the event
+            int motherIndex;
+            if (event[i].isCharged()) {
+                // only consider primary charged particles (According to ALICE's definition of primary)
+                double particleLifetime = (event[i].tau())/10; // Convert mm/c to cm/c
+                bool isPrimary = true;
+                if (particleLifetime < 1) {
+                    isPrimary = false;
+                } else {
+                    motherIndex = event[i].mother1();
+                    double motherLifetime;
+                
+                    while (!event[motherIndex].isQuark() && !event[motherIndex].isGluon())  {
+                        motherLifetime = (event[motherIndex].tau())/10;
+                        if (motherLifetime > 1) {
+                            isPrimary = false;
+                            break;
+                        }
+                        motherIndex = event[motherIndex].mother1();
+                    }
+                }
 
-            int particleID = abs(pythia.event[i].id());
-            int particleStatus = abs(pythia.event[i].status());
-            double particlePAbs = pythia.event[i].pAbs();
-            double particlePt = pythia.event[i].pT();
-            double particleRapidity = pythia.event[i].y();
-            double particlePseudorapidity = pythia.event[i].eta();
+                // only consider primary charged particles in the central barrel region
+                if (isPrimary && (abs(event[i].eta()) < 1)) {
+                    multCount++;
+                }
+            }
+
+            int particleID = abs(event[i].id());
+            int particleStatus = abs(event[i].status());
+            double particlePAbs = event[i].pAbs();
+            double particlePt = event[i].pT();
+            double particleRapidity = event[i].y();
+            double particlePseudorapidity = event[i].eta();
 
             if (particleID == 13) { // muon
-                int motherIndex = pythia.event[i].mother1();
-                int firstMotherID = abs(pythia.event[motherIndex].id());
+                int motherIndex = event[i].mother1();
+                int firstMotherID = abs(event[motherIndex].id());
 
                 string decayOutput = "mu";
-                bool motherHadronStatus = pythia.event[motherIndex].isHadron();
+                bool motherHadronStatus = event[motherIndex].isHadron();
                 int prevIndex = -1;
                 while (motherHadronStatus) {
-                    string hadronOutput = " -> " + pythia.event[motherIndex].name();
+                    string hadronOutput = " -> " + event[motherIndex].name();
                     decayOutput = decayOutput + hadronOutput;
                     prevIndex = motherIndex;
-                    motherIndex = pythia.event[motherIndex].mother1();
-                    motherHadronStatus = pythia.event[motherIndex].isHadron();
+                    motherIndex = event[motherIndex].mother1();
+                    motherHadronStatus = event[motherIndex].isHadron();
                 }
 
                 int lastMotherID = firstMotherID;
                 if (prevIndex != -1) {
-                    lastMotherID = abs(pythia.event[prevIndex].id());
+                    lastMotherID = abs(event[prevIndex].id());
                     decayOutput = decayOutput + " -> [";
-                    for (int index: pythia.event[prevIndex].motherList()) {
-                        if (!pythia.event[index].isGluon()) {
-                            decayOutput = decayOutput + pythia.event[index].name();
+                    for (int index: event[prevIndex].motherList()) {
+                        if (!event[index].isGluon()) {
+                            decayOutput = decayOutput + event[index].name();
                             decayOutput = decayOutput + " ";
                         }
                     }
                     decayOutput = decayOutput + "]";
                 } else {
-                    string otherOutput = " -> " + pythia.event[motherIndex].name();
+                    string otherOutput = " -> " + event[motherIndex].name();
                     decayOutput = decayOutput + otherOutput;
                 }
 
@@ -188,10 +223,11 @@ int main(int argc, char *argv[]) {
         }
 
         multiplicities[iEvent] = multCount;
-    }
+        iEvent += 1;
+    });
 
     // cross-section for the bin
-    double luminocity_hard = events_run/(pythia.info.sigmaGen()*pow(10,9));
+    double luminocity_hard = events_run/(pythia.sigmaGen()*pow(10,9));
     binLuminocity[iBin] = luminocity_hard;
 
     hardPt->Scale(1/luminocity_hard, "width");
