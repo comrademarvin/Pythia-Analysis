@@ -14,7 +14,7 @@ int main() {
     int generatedEvents = 10000;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain11_W-_10k.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11_W+_10k.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
@@ -32,8 +32,8 @@ int main() {
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
-    pythia.readString("Beams:LHEF = pwgevents_W-_10k.lhe");
-    pythia.readString("Parallelism:numThreads = 5");
+    pythia.readString("Beams:LHEF = pwgevents_W+_10k.lhe");
+    //pythia.readString("Parallelism:numThreads = 5");
 
     // Event settings
     pythia.readString("Main:numberOfEvents = 0");

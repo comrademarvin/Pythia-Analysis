@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
     const double* binEdges;
     if (softQCD) {
         nBins = 7;
-        static const double tempArray[8] = {0.0, 10.0, 30.0, 50.0, 75.0, 100.0, 150.0, 200.0};
+        static const double tempArray[8] = {0.0, 10.0, 40.0, 70.0, 100.0, 150.0, 200.0, 300.0};
         binEdges = &tempArray[0];
     } else {
         nBins = 4;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     TNtuple* muonTuple = new TNtuple("muon", "muon", "binTag:eventTag:pAbs:pt:y:eta:decayStatus:firstMother:lastMother");
 
     // Number of events to generate per bin.
-    int N_events = 1000000;
+    int N_events = 20000000;
 
     int events_run;
     if (softQCD && iBin == 0) {

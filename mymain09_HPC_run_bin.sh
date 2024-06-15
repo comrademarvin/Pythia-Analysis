@@ -6,7 +6,7 @@ sbatch <<EOT
 #SBATCH --partition=ada
 #BATCH --time=20:00:00
 #SBATCH --nodes=1 --ntasks=10
-#SBATCH --job-name="pythia_main09_1M_$1"
+#SBATCH --job-name="pythia_main09_20M_$1"
 #SBATCH --mail-user=ptgjak001@myuct.ac.za
 #SBATCH --mail-type=ALL
 

@@ -18,7 +18,7 @@ void mymain09Macro_HPC_contributions() {
 
         TNtuple *muonTuple = (TNtuple*)infile->Get("muon");
 
-        TH1F *muonPtPart = new TH1F(Form("muon_pt_part_%d", iBin),"", NBINS, edges);
+        TH1F *muonPtPart = new TH1F(Form("muon_pt_part_%d", iBin),"", 40, 0, 80);
 
         if (iBin == 0) {
             muonTuple->Draw(Form("pt>>muon_pt_part_%d", iBin), "(pt < 8.0) && (pt > 2.0) && (y > 2.5) && (y < 4) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
