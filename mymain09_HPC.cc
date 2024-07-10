@@ -71,9 +71,9 @@ int main(int argc, char *argv[]) {
         pythia.readString("SoftQCD:nonDiffractive = off");
     }
 
-    pythia.readString("Beams:eCM = 5360.");
+    pythia.readString("Beams:eCM = 5020.");
     pythia.readString("Tune:pp = 14"); // Monash tune
-    pythia.readString("Parallelism:numThreads = 10");
+    pythia.readString("Parallelism:numThreads = 15");
 
     // Set PDF
     //pythia.readString("PDF:pSet = 8");

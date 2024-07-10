@@ -11,7 +11,7 @@ void mymain09Macro_HPC_contributions() {
     vector<TH1F*> binHist(7);
 
     for(int iBin = 0; iBin < 7; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain09_HPC_root/mymain09_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_536/mymain09_%d.root", iBin), "READ");
 
         std::vector<double> *binLuminocity;
         infile->GetObject("luminocity", binLuminocity);

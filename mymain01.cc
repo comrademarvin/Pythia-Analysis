@@ -30,7 +30,7 @@ int main() {
 
     Pythia pythia;
 
-    pythia.readString("Beams:eCM = 5020.");
+    pythia.readString("Beams:eCM = 5360.");
     pythia.readString("Tune:pp = 14");
     //pythia.readString("PDF:pSet = 9");
 

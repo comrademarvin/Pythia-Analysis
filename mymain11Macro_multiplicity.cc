@@ -12,11 +12,14 @@
 // }
 
 void mymain11Macro_multiplicity() {
-    const Int_t multBinCount = 5;
-    Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
+    // const Int_t multBinCount = 5;
+    // Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
+
+    const Int_t multBinCount = 7;
+    Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
 
     const Int_t pTBinCount = 50;
-     const Int_t pTBinMin = 10;
+    const Int_t pTBinMin = 10;
     const Int_t pTBinMax = 80;
 
     Double_t multBinsAverage[multBinCount+1];
@@ -32,10 +35,10 @@ void mymain11Macro_multiplicity() {
     } 
 
     // Access W+/- showered data
-    TFile* infile = TFile::Open("mymain11_W-_5M.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W-_10M.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
-    TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 60, 0, 120);
+    TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 40, 0, 80);
     TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
     TH1D* W_muon_mult_raw = new TH1D("W_muon_mult_raw", "Primary charged particle dependence;N_{ch};#sigma_{W->#mu} (mb)", 50, 0, 100);
     TH1D* W_muon_multiplicity = new TH1D("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins);
@@ -59,11 +62,12 @@ void mymain11Macro_multiplicity() {
     // For W+ -> muon
     TNtuple *muonTuple = (TNtuple*)infile->Get("W_muon");
     int muons_count = muonTuple->GetEntries();
-    Float_t eventIndex, eta, pt, rapidity;
+    Float_t eventIndex, eta, pt, rapidity, pAbs;
     muonTuple->SetBranchAddress("eventTag", &eventIndex);
     muonTuple->SetBranchAddress("y", &rapidity);
     muonTuple->SetBranchAddress("eta", &eta);
     muonTuple->SetBranchAddress("pt", &pt);
+    muonTuple->SetBranchAddress("pAbs", &pAbs);
 
     for (int iMuon = 0; iMuon < muons_count; iMuon++) {
         muonTuple->GetEntry(iMuon);
@@ -73,12 +77,12 @@ void mymain11Macro_multiplicity() {
         W_muon_multiplicity->Fill(muon_event_mult/2);
 
         // kinematics
-        if ((rapidity >= 2.5) && (rapidity <= 4)) {
+        if ((rapidity >= 2.5) && (rapidity <= 4) && (abs(pAbs) > 4)) {
             W_muon_pt->Fill(pt);
         }
 
         // multiplicity
-        if ((rapidity >= 2.5) && (rapidity <= 4) && (pt >= pTBinMin) && (pt <= pTBinMax)) {
+        if ((rapidity >= 2.5) && (rapidity <= 4) && (pt >= pTBinMin) && (pt <= pTBinMax) && (abs(pAbs) > 4)) {
             double event_mult_average_norm = muon_event_mult/(2*mb_mult_average);
             W_muon_yield_mult->Fill(event_mult_average_norm);
             for (int iBin = 0; iBin < multBinCount; iBin++) {

@@ -8,8 +8,10 @@ void mymain01Macro() {
     // pT-hat bins
     static const int nBins = 6;
     static const double binEdges[nBins+1] = {0.0, 15.0, 30.0, 50.0, 70.0, 100.0, 150.0};
-    const Int_t multBinCount = 5;
-    Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
+    // const Int_t multBinCount = 5;
+    // Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
+    const Int_t multBinCount = 7;
+    Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
 
     // pThat multiplicity
     TH1D* multiplicity_events_central = new TH1D("multiplicity_events_central", "Integrated Primary Charged Particle Multiplicity Dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", multBinCount, multBins);
@@ -29,7 +31,7 @@ void mymain01Macro() {
     //     pThat_bins_mult[iBin] = new TH1F(Form("pThat_bin_%d", iBin), "", 150, 0, 300);
     // }
 
-    TFile *infile = TFile::Open("mymain01.root", "READ");
+    TFile *infile = TFile::Open("mymain01_1M_536.root", "READ");
 
     std::vector<double> *binLuminocity;
     infile->GetObject("luminocity", binLuminocity);
