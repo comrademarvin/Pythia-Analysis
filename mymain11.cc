@@ -1,6 +1,6 @@
 #include "Pythia8/Pythia.h"
-#include "Pythia8/PythiaParallel.h"
 #include "Pythia8Plugins/PowhegHooks.h"
+//#include "Pythia8Plugins/HepMC2.h"
 #include "TFile.h"
 #include "TH1.h"
 #include <TNtuple.h>
@@ -11,10 +11,10 @@ int main() {
     // Generator
     Pythia pythia;
 
-    int generatedEvents = 10000000;
+    int generatedEvents = 10000;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain11_W-_10M.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11_W+_10k.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
@@ -32,7 +32,7 @@ int main() {
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
-    pythia.readString("Beams:LHEF = pwgevents_W-_10M_536.lhe");
+    pythia.readString("Beams:LHEF = pwgevents_Josh.lhe");
     pythia.readString("Tune:pp = 14"); // Monash tune
     //pythia.readString("Parallelism:numThreads = 5");
 
