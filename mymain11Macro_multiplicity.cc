@@ -35,7 +35,7 @@ void mymain11Macro_multiplicity() {
     } 
 
     // Access W+/- showered data
-    TFile* infile = TFile::Open("mymain11_W-_10M.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W+_10M.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 40, 0, 80);
@@ -222,7 +222,7 @@ void mymain11Macro_multiplicity() {
     delete outFile;
 
     // save histograms to join W+/- analysis
-    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_minus.root", "RECREATE");
+    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_plus.root", "RECREATE");
 
     // kinematics
     W_muon_pt->Write();
