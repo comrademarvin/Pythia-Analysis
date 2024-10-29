@@ -11,79 +11,83 @@ using namespace Pythia8;
 int main() {
     // Hard QCD
     Pythia pythiaHard;
-    pythiaHard.readString("Beams:eCM = 5200.");
+    pythiaHard.readString("Beams:eCM = 13600.");
     pythiaHard.readString("Tune:pp = 14");
     pythiaHard.readString("HardQCD:all = on");
     pythiaHard.readString("SoftQCD:nonDiffractive = off");
-    pythiaHard.readString("PartonLevel:all = off");
-    pythiaHard.readString("PhaseSpace:pTHatMinDiverge = 8.0");
-    pythiaHard.readString("PhaseSpace:pTHatMin = 8.0");
+    // pythiaHard.readString("PartonLevel:all = off");
+    // pythiaHard.readString("PhaseSpace:pTHatMinDiverge = 8.0");
+    pythiaHard.readString("PhaseSpace:pTHatMin = 2.0");
     pythiaHard.init();
 
     // Soft QCD
     Pythia pythiaSoft;
-    pythiaSoft.readString("Beams:eCM = 5200.");
+    pythiaSoft.readString("Beams:eCM = 13600.");
     pythiaSoft.readString("Tune:pp = 14");
     pythiaSoft.readString("HardQCD:all = off");
     pythiaSoft.readString("SoftQCD:nonDiffractive = on");
-    pythiaSoft.readString("PartonLevel:all = on");
-    pythiaSoft.readString("PartonLevel:ISR = off");
-    pythiaSoft.readString("PartonLevel:FSR = off");
-    pythiaSoft.readString("HadronLevel:all = off");
+    // pythiaSoft.readString("PartonLevel:all = on");
+    // pythiaSoft.readString("PartonLevel:ISR = off");
+    // pythiaSoft.readString("PartonLevel:FSR = off");
+    // pythiaSoft.readString("HadronLevel:all = off");
     pythiaSoft.init();
-
-    // ROOT file for histograms
-    TFile* outFile = new TFile("mymain04.root", "RECREATE");
 
     // TNtuple appraoch for cuts and histograms
     TNtuple* hardestHardQCD = new TNtuple("hardQCD", "hardQCD", "pTHat:thetaHat:phiHat");
     TNtuple* hardestSoftQCD = new TNtuple("softQCD", "softQCD", "pTHat:thetaHat:phiHat");
 
+    // generation info for normalisation
+    vector<double> genInfoHard(3);
+    vector<double> genInfoSoft(3);
+
     int N_events = 1000000;
 
     int eventCounter = 0;
 
+    // generate events for Hard QCD
+    eventCounter = 0;
     for (int iEvent = 0; iEvent < N_events; ++iEvent) {
         if (!pythiaHard.next()) continue;
-        if (!pythiaSoft.next()) continue;
         
-        eventCounter++;
-
         hardestHardQCD->Fill(pythiaHard.info.pTHat(), pythiaHard.info.thetaHat(), pythiaHard.info.phiHat());
-        hardestSoftQCD->Fill(pythiaSoft.info.pTHat(), pythiaSoft.info.thetaHat(), pythiaSoft.info.phiHat());
+        eventCounter++;
     }
 
-    pythiaHard.stat();
-    pythiaSoft.stat();
+    // generate events for Soft QCD
+    for (int iEvent = 0; iEvent < N_events; ++iEvent) {
+        if (!pythiaSoft.next()) continue;
+
+        hardestSoftQCD->Fill(pythiaSoft.info.pTHat(), pythiaSoft.info.thetaHat(), pythiaSoft.info.phiHat());
+        eventCounter++;
+    }
+
+    // pythiaHard.stat();
+    // pythiaSoft.stat();
 
     // Luminocity for normalization
-    float luminocity_hard = N_events/(pythiaHard.info.sigmaGen()*pow(10,9));
-    float luminocity_soft = N_events/(pythiaSoft.info.sigmaGen()*pow(10,9));
+    genInfoHard[0] = pythiaHard.info.weightSum();
+    genInfoHard[1] = pythiaHard.info.sigmaGen();
+    genInfoHard[2] = pythiaHard.info.sigmaErr();
 
-    //Plotting
-    TCanvas *c1 = new TCanvas("c1","c1");
+    genInfoSoft[0] = pythiaSoft.info.weightSum();
+    genInfoSoft[1] = pythiaSoft.info.sigmaGen();
+    genInfoSoft[2] = pythiaSoft.info.sigmaErr();
 
-    // Hard QCD hist
-    TH1F *hardQCDpTHat = new TH1F("hard_QCD_pTHat","Contribution to Hardest Process;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 40, 0, 40);
-    hardQCDpTHat->SetLineColor(1);
-    //hardQCDpTHat->SetStats(0);
-    hardestHardQCD->Draw("pTHat>>hard_QCD_pTHat", "pTHat<40");
-    hardQCDpTHat->Scale(1/luminocity_hard, "width");
+    // float luminocity_hard = pythiaHard.info.weightSum()/(pythiaHard.info.sigmaGen());
+    // float luminocity_soft = pythiaSoft.info.weightSum()/(pythiaSoft.info.sigmaGen());
 
-    // Soft QCD hist
-    TH1F *softQCDpTHat = new TH1F("soft_QCD_pTHat", "Contribution to hardest process;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 40, 0, 40);
-    softQCDpTHat->SetLineColor(2);
-    //softQCDpTHat->SetStats(0);
-    hardestSoftQCD->Draw("pTHat>>soft_QCD_pTHat", "pTHat<40", "SAME");
-    softQCDpTHat->Scale(1/luminocity_soft, "width");
+    // check the error from the cross-section
+    std::cout << "Generated cross-section for Soft QCD: " << pythiaSoft.info.sigmaGen() << " +/- " << pythiaSoft.info.sigmaErr() << std::endl;
+    std::cout << "Generated cross-section for Hard QCD: " << pythiaHard.info.sigmaGen() << " +/- " << pythiaHard.info.sigmaErr() << std::endl;
 
-    // Legend
-    auto legend = new TLegend();
-    legend->AddEntry(hardQCDpTHat,"HardQCD:all","l");
-    legend->AddEntry(softQCDpTHat,"SoftQCD:nonDiffractive","l");
-    legend->Draw();
+    // ROOT file for histograms
+    TFile* outFile = new TFile("mymain04.root", "RECREATE");
 
-    c1->Write();
+    hardestHardQCD->Write();
+    hardestSoftQCD->Write();
+
+    outFile->WriteObject(&genInfoHard, "genInfoHard");
+    outFile->WriteObject(&genInfoSoft, "genInfoSoft");
 
     delete outFile;
 

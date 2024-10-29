@@ -3,3 +3,26 @@ mymain01:
 
     mymain01Macro: rebinning and formatting for multiplicity analysis input and plotting
     TODO - mymain01Macro_mult_regions: show multiplicity distributions for different regions of detector.
+
+mymain02:
+    First attempt of HF->mu cross-section. DEPRECATED - should be removed.
+
+mymain03:
+    Second attempt of HF->mu cross-section. DEPRECATED - should be removed.
+
+mymain04:
+    Compare pT-hat cross-sections from Soft and Hard QCD, to identify where they converge for a specified energy.
+
+    mymain04Macro: normalises and plots pT-hat for comparison of soft/hard QCD
+
+mymain05:
+    Repurposed to look at forward muon semileptonic contributions in minimum bias.
+
+mymain06:
+    Investigation of production mechanisms that lead to HF production - needs improvement (TODO)
+
+mymain07:
+    First attempt at running events in parallel. DEPRECATED - should be removed, as alternative method was found.
+
+binned_mb_template:
+    Pythia template to generate minimum bias events, using binned pT-hat generation. Can be copied and adjusted for specific generation.

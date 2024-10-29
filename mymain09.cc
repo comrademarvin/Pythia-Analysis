@@ -90,7 +90,7 @@ int main() {
 
         int eventCount = 0;
 
-        int events_run;
+        int events_run; // run more events for SoftQCD and first bin for improved statistics
         if (softQCD && iBin == 0) {
             events_run = 10*N_events;
         } else if (iBin == 1) {
