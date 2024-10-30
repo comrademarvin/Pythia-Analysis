@@ -1,5 +1,5 @@
 mymain01:
-    Minimum bias ALICE definition charged particle multiplicity in central barrel (|eta|<1) (also used as input for multiplicity analysis - mymain11)
+    Minimum bias (MB) ALICE definition charged particle multiplicity in central barrel (|eta|<1) (also used as input for multiplicity analysis - mymain11)
 
     mymain01Macro: rebinning and formatting for multiplicity analysis input and plotting
     TODO - mymain01Macro_mult_regions: show multiplicity distributions for different regions of detector.
@@ -17,6 +17,8 @@ mymain04:
 
 mymain05:
     Repurposed to look at forward muon semileptonic contributions in minimum bias.
+
+    mymain05Macro: plots the total generated cross-section for MB and also the forward muon core contributions in MB.
 
 mymain06:
     Investigation of production mechanisms that lead to HF production - needs improvement (TODO)

@@ -5,7 +5,7 @@
 #include <TNtuple.h>
 
 void mymain05Macro() {
-    TFile *infile = TFile::Open("mymain05.root", "READ");
+    TFile *infile = TFile::Open("mymain05_200k.root", "READ");
 
     TNtuple *genInfo = (TNtuple*)infile->Get("genInfo");
 
