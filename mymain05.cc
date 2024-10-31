@@ -11,10 +11,10 @@ using namespace Pythia8;
 
 int main() {
     // ROOT output file
-    TFile* outFile = new TFile("mymain05_200k.root", "RECREATE");
+    TFile* outFile = new TFile("mymain05_1M.root", "RECREATE");
 
     // Number of events to generate per bin.
-    int N_events = 200000;
+    int N_events = 1000000;
 
     // Turn SoftQCD on/off
     bool softQCD = true;
@@ -40,8 +40,8 @@ int main() {
 
     // Histograms
     // Total Cross Section
-    int N_bins_hard_pt = 50;
-    TH1F *hardPt = new TH1F("pT_hat","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", N_bins_hard_pt, 0.0, 200.0);
+    int N_bins_hard_pt = 100;
+    TH1F *hardPt = new TH1F("pT_hat","Total Generated Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{d#hat{p}_{T}} (mb/GeV/c)", N_bins_hard_pt, 0.0, 200.0);
     TH1F *hardPtPart = new TH1F("hardQCD_part","", N_bins_hard_pt, 0.0, 200.0);
 
     // store forward muons for analysis

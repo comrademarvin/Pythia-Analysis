@@ -15,8 +15,17 @@ void mymain05Macro() {
     int N_bins_muon_pt = 20;
     float lowerPt = 0.0;
     float upperPt = 20.0;
-    TH1F *muonPt = new TH1F("muon_pt","", N_bins_muon_pt, lowerPt, upperPt);
-    TH1F *muonPtPart = new TH1F("muon_pt_part","", N_bins_muon_pt, lowerPt, upperPt);
+    const unsigned int N_cont = 9;
+    const string contrib[N_cont] = {"total", "lepton", "boson", "light meson", "charm meson", "bottom meson", "charmonium", "bottomonium", "baryon"};
+    const unsigned int contrib_lower_pdg[N_cont] = {0, 10, 20, 110, 410, 510, 440, 550, 1110};
+    const unsigned int contrib_upper_pdg[N_cont] = {10000000, 10, 20, 340, 440, 550, 450, 560, 5555};
+
+    vector<TH1F*> muonPt(N_cont);
+    vector<TH1F*> muonPtPart(N_cont);
+    for (int iCont = 0; iCont < N_cont; iCont++) {
+        muonPt[iCont] = new TH1F(Form("muon_pt_%d", iCont),"Contributions to Forward Muon Production;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", N_bins_muon_pt, lowerPt, upperPt);
+        muonPtPart[iCont] = new TH1F(Form("muon_pt_part_%d", iCont),"", N_bins_muon_pt, lowerPt, upperPt);
+    }
 
     // iterate over bins and access generated cross-section info
     float weightSum, sigmaGen, sigmaErr;
@@ -26,31 +35,54 @@ void mymain05Macro() {
 
     for(int iBin = 0; iBin < genInfo->GetEntries(); iBin++){
         genInfo->GetEntry(iBin);
-        muonPtPart->Reset();
+        for (int iCont = 0; iCont < N_cont; iCont++) muonPtPart[iCont]->Reset();
         
         // access the associated bin forward muons
         TNtuple *muonTuple = (TNtuple*)infile->Get(Form("muon%d", iBin));
 
-        muonTuple->Draw("pt>>muon_pt_part"); // pT of forward muons
+        for (int iCont = 0; iCont < N_cont; iCont++) {
+            muonTuple->Draw(Form("pt>>muon_pt_part_%d", iCont), 
+                            Form("firstMother > %d && firstMother < %d", contrib_lower_pdg[iCont], contrib_upper_pdg[iCont]));
+        }
 
         // normalise to cross-section
-        muonPtPart->Scale(1/weightSum, "width");
         TH1F *sigmaGenHistPt = new TH1F("sigma_gen_pt","", N_bins_muon_pt, lowerPt, upperPt);
         for (int iBin = 0; iBin < N_bins_muon_pt; iBin++) {
             sigmaGenHistPt->SetBinContent(iBin, sigmaGen);
             sigmaGenHistPt->SetBinError(iBin, sigmaErr);
         }
-        muonPtPart->Multiply(sigmaGenHistPt);
-        muonPtPart->Write(Form("muon_pt_part_%d", iBin));
-
-        muonPt->Add(muonPtPart);
+        for (int iCont = 0; iCont < N_cont; iCont++) {
+            muonPtPart[iCont]->Scale(1/weightSum, "width");
+            muonPtPart[iCont]->Multiply(sigmaGenHistPt);
+            if (iCont == 0) muonPtPart[iCont]->Write(Form("muon_pt_part_%d", iBin));
+            muonPt[iCont]->Add(muonPtPart[iCont]);
+        }
     }
 
     TCanvas *canvasPt = new TCanvas("muon_pt","muon_pt");
     gPad->SetLogy();
-    muonPt->SetMinimum(0.000000001);
-    muonPt->Draw();
+    auto legend = new TLegend();
+    for (int iCont = 0; iCont < N_cont; iCont++) {
+        muonPt[iCont]->SetMinimum(0.000000001);
+        muonPt[iCont]->SetStats(0);
+        muonPt[iCont]->SetLineColor(iCont+1);
+        muonPt[iCont]->SetMarkerStyle(20+iCont);
+        muonPt[iCont]->SetMarkerColor(iCont+1);
+        muonPt[iCont]->Draw("SAME");
+        legend->AddEntry(muonPt[iCont],(contrib[iCont]).c_str(),"p");
+    }
+    legend->Draw("SAME");
     canvasPt->Write();
+
+    // also plot total cross-section
+    TH1F* total_cs_pt_hat = (TH1F*)infile->Get("pT_hat");
+    TCanvas *canvasPtHat = new TCanvas("total_cs_pt_hat","total_cs_pt_hat");
+    gPad->SetLogy();
+    total_cs_pt_hat->SetMaximum(10);
+    total_cs_pt_hat->SetMinimum(0.0000001);
+    total_cs_pt_hat->SetStats(0);
+    total_cs_pt_hat->Draw();
+    canvasPtHat->Write();
 
     delete outFile;
 }
