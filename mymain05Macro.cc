@@ -5,7 +5,7 @@
 #include <TNtuple.h>
 
 void mymain05Macro() {
-    TFile *infile = TFile::Open("mymain05_200k.root", "READ");
+    TFile *infile = TFile::Open("mymain05_1M.root", "READ");
 
     TNtuple *genInfo = (TNtuple*)infile->Get("genInfo");
 
@@ -15,10 +15,10 @@ void mymain05Macro() {
     int N_bins_muon_pt = 20;
     float lowerPt = 0.0;
     float upperPt = 20.0;
-    const unsigned int N_cont = 9;
-    const string contrib[N_cont] = {"total", "lepton", "boson", "light meson", "charm meson", "bottom meson", "charmonium", "bottomonium", "baryon"};
-    const unsigned int contrib_lower_pdg[N_cont] = {0, 10, 20, 110, 410, 510, 440, 550, 1110};
-    const unsigned int contrib_upper_pdg[N_cont] = {10000000, 10, 20, 340, 440, 550, 450, 560, 5555};
+    const unsigned int N_cont = 8;
+    const string contrib[N_cont] = {"total", "lepton", "boson", "light meson", "charm meson", "bottom meson", "charmonium", "baryon"};
+    const unsigned int contrib_lower_pdg[N_cont] = {0, 10, 20, 110, 410, 510, 440, 1110};
+    const unsigned int contrib_upper_pdg[N_cont] = {10000000, 19, 38, 340, 440, 550, 450, 5555};
 
     vector<TH1F*> muonPt(N_cont);
     vector<TH1F*> muonPtPart(N_cont);
@@ -59,15 +59,16 @@ void mymain05Macro() {
         }
     }
 
+    int lineColours[N_cont] = {1,2,3,4,6,7,8,9};
     TCanvas *canvasPt = new TCanvas("muon_pt","muon_pt");
     gPad->SetLogy();
     auto legend = new TLegend();
     for (int iCont = 0; iCont < N_cont; iCont++) {
         muonPt[iCont]->SetMinimum(0.000000001);
         muonPt[iCont]->SetStats(0);
-        muonPt[iCont]->SetLineColor(iCont+1);
+        muonPt[iCont]->SetLineColor(lineColours[iCont]);
         muonPt[iCont]->SetMarkerStyle(20+iCont);
-        muonPt[iCont]->SetMarkerColor(iCont+1);
+        muonPt[iCont]->SetMarkerColor(lineColours[iCont]);
         muonPt[iCont]->Draw("SAME");
         legend->AddEntry(muonPt[iCont],(contrib[iCont]).c_str(),"p");
     }

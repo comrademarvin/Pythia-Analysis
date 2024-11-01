@@ -40,7 +40,7 @@ int main() {
 
     // Histograms
     // Total Cross Section
-    int N_bins_hard_pt = 100;
+    int N_bins_hard_pt = 200;
     TH1F *hardPt = new TH1F("pT_hat","Total Generated Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{d#hat{p}_{T}} (mb/GeV/c)", N_bins_hard_pt, 0.0, 200.0);
     TH1F *hardPtPart = new TH1F("hardQCD_part","", N_bins_hard_pt, 0.0, 200.0);
 

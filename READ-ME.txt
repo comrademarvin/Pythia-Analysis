@@ -26,5 +26,11 @@ mymain06:
 mymain07:
     First attempt at running events in parallel. DEPRECATED - should be removed, as alternative method was found.
 
+mymain08:
+    Third attempt of HF->mu cross-section. DEPRECATED - should be removed.
+
+mymain09:
+    Final version of HF->mu cross-section. Generated with pt-hat binning and outputs correct decay status. TODO: include multiplicity
+
 binned_mb_template:
     Pythia template to generate minimum bias events, using binned pT-hat generation. Can be copied and adjusted for specific generation.
