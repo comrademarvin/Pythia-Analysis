@@ -10,14 +10,17 @@
 using namespace Pythia8;
 
 int main() {
+    // ROOT file for histograms
+    TFile* outFile = new TFile("mymain09_10k.root", "RECREATE");
+
+    // Number of events to generate per bin.
+    int N_events = 1000;
+
     // Turn SoftQCD on/off
     bool softQCD = true;
 
     // Pythia object
     Pythia pythia;
-
-    // ROOT file for histograms
-    TFile* outFile = new TFile("mymain09.root", "RECREATE");
 
     // pTHat bins
     int nBins;
@@ -32,32 +35,20 @@ int main() {
         binEdges = &tempArray[0];
     }
 
-    vector<double> binLuminocity(nBins); // luminocity from generated process sigma to calculate cross-sections
+    TNtuple* genInfo = new TNtuple("genInfo", "genInfo", "weightSum:sigmaGen:sigmaErr"); // generated process info for cross-section normalisation
 
     // Histograms
     // Total Cross Section
-    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", 200, 0.0, 200.0);
-    TH1F *hardPtPart = new TH1F("hardQCD_part","", 200, 0.0, 200.0);
+    int N_bins_hard_pt = 50;
+    TH1F *hardPt = new TH1F("pT_hat","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", N_bins_hard_pt, 0.0, 200.0);
+    TH1F *hardPtPart = new TH1F("hardQCD_part","", N_bins_hard_pt, 0.0, 200.0);
 
     // HF Cross Sections
     vector<TNtuple*> muonTuples(nBins);
 
     for (int i = 0; i < nBins; ++i) {
-        muonTuples[i] = new TNtuple(Form("muon%d", i), "muon", "binTag:eventTag:pAbs:pt:y:eta:decayStatus:firstMother:lastMother"); // see definition of decayStaus below
+        muonTuples[i] = new TNtuple(Form("muon%d", i), "muon", "binTag:eventTag:pAbs:pt:y:eta:firstMother:lastMother:decayStatus"); // see definition of decayStaus below
     }
-
-    // Number of events to generate per bin.
-    int N_events = 1000;
-
-    // Store multiplicity of each event
-    // int multBins;
-    // int scaleSoftBin = 3;
-    // if (softQCD) { 
-    //     multBins = nBins+(scaleSoftBin-1);
-    // } else {
-    //     multBins = nBins;
-    // }
-    // vector<int> multiplicities(multBins*N_events, -1);
 
     // run events for each ptHat bin 
     for (int iBin = 0; iBin < nBins; ++iBin) {
@@ -65,7 +56,6 @@ int main() {
             pythia.readString("HardQCD:all = off");
             pythia.readString("SoftQCD:nonDiffractive = on");
         } else {
-            // set pythia initialization variables
             pythia.readString("HardQCD:all = on");
             // pythia.readString("HardQCD:hardccbar = on");
             // pythia.readString("HardQCD:hardbbbar = on");
@@ -75,7 +65,7 @@ int main() {
         pythia.readString("Beams:eCM = 5020.");
         pythia.readString("Tune:pp = 14");
 
-        // D+ forced muon decay
+        // D+ forced muon decay 
         pythia.readString("411:onMode=off");
         pythia.readString("411:onIfAny=13");
         // D0 forced muon decay
@@ -92,9 +82,9 @@ int main() {
 
         int events_run; // run more events for SoftQCD and first bin for improved statistics
         if (softQCD && iBin == 0) {
-            events_run = 10*N_events;
+            events_run = 3*N_events;
         } else if (iBin == 1) {
-            events_run = 5*N_events;
+            events_run = 2*N_events;
         } else {
             events_run = N_events;
         }
@@ -107,116 +97,80 @@ int main() {
             if (softQCD && iBin == 0 && pythia.info.isNonDiffractive()
             && pTHat > binEdges[iBin+1]) continue;
 
-            //if (pTHat < binEdges[iBin]) continue;
-
             eventCount++;
 
             hardPtPart->Fill(pTHat);
 
-            //cout << "====START OF NEW EVENT====" << endl;
-
-            int multCount = 0;
-
             for (int i = 0; i < pythia.event.size(); ++i) {
-                if (pythia.event[i].isFinal() && pythia.event[i].isCharged()) multCount++;
+                auto* particle = &pythia.event[i];
+                int particleID = abs(particle->id());
 
-                int particleID = abs(pythia.event[i].id());
-                int particleStatus = abs(pythia.event[i].status());
-                double particlePAbs = pythia.event[i].pAbs();
-                double particlePt = pythia.event[i].pT();
-                double particleRapidity = pythia.event[i].y();
-                double particlePseudorapidity = pythia.event[i].eta();
-
-                if (particleID == 13) { // muon
-                    int motherIndex = pythia.event[i].mother1();
-                    int firstMotherID = abs(pythia.event[motherIndex].id());
-
-                    string decayOutput = "mu";
-                    bool motherHadronStatus = pythia.event[motherIndex].isHadron();
-                    int prevIndex = -1;
-                    while (motherHadronStatus) {
-                        string hadronOutput = " -> " + pythia.event[motherIndex].name();
-                        decayOutput = decayOutput + hadronOutput;
-                        prevIndex = motherIndex;
-                        motherIndex = pythia.event[motherIndex].mother1();
-                        motherHadronStatus = pythia.event[motherIndex].isHadron();
+                if (particleID == 13 && particle->isFinal() && (particle->eta()>2.5) && (particle->eta()<4.0)) { // final state muons in forward rapidity region
+                    // find first non-copy mother
+                    auto* muonFinal = particle;
+                    string decayOutput = "==== Here forward muon decay: mu";
+                    while ((particle->mother2() != 0) && (particle->mother1() == particle->mother2())) {
+                        particle = &pythia.event[particle->mother1()];
+                        string partOutput = " <- " + particle->name();
+                        decayOutput = decayOutput + partOutput;
                     }
+                    auto* firstMother = &pythia.event[particle->mother1()];
+                    decayOutput = decayOutput + " <- ";
+                    decayOutput = decayOutput + firstMother->name(); 
+                    decayOutput = decayOutput + " (firstMother)";
 
-                    int lastMotherID = firstMotherID;
-                    if (prevIndex != -1) {
-                        lastMotherID = abs(pythia.event[prevIndex].id());
-                        decayOutput = decayOutput + " -> [";
-                        for (int index: pythia.event[prevIndex].motherList()) {
-                            if (!pythia.event[index].isGluon()) {
-                                decayOutput = decayOutput + pythia.event[index].name();
-                                decayOutput = decayOutput + " ";
-                            }
+                    int firstMotherID = abs(firstMother->id());
+                    if ((firstMotherID >= 411 && firstMotherID <= 435) || (firstMotherID >= 511 && firstMotherID <= 545)) { // only consider HF->mu decays
+                        // then find last mother formed by hadronisation
+                        auto* lastMother = firstMother;
+                        auto* iterator = &pythia.event[firstMother->mother1()];
+                        while (iterator->isHadron()) {
+                            decayOutput = decayOutput + " <- ";
+                            decayOutput = decayOutput + iterator->name();
+                            lastMother = iterator;
+                            iterator = &pythia.event[iterator->mother1()];
                         }
-                        decayOutput = decayOutput + "]";
-                    } else {
-                        string otherOutput = " -> " + pythia.event[motherIndex].name();
-                        decayOutput = decayOutput + otherOutput;
+                        decayOutput = decayOutput + " (lastMother)";
+                        decayOutput = decayOutput + " <- ";
+                        decayOutput = decayOutput + iterator->name();
+
+                        // determine the HF decayStates, defined as:
+                        // -1: ? -> D/B -> mu
+                        // 0: c->D->mu (charm meson)
+                        // 1: b->B->mu (bottom meson)
+                        // 2: b->B->D->mu (bottom to charm meson)
+
+                        int decayStatus = -1;
+                        int lastMotherID = abs(lastMother->id());
+                        if (firstMotherID >= 411 && firstMotherID <= 435) { // muon from D-meson decay
+                            if (lastMotherID >= 411 && lastMotherID <= 435) decayStatus = 0;
+                            else if (lastMotherID >= 511 && lastMotherID <= 545) decayStatus = 2;
+                        } else if (lastMotherID >= 511 && lastMotherID <= 545) decayStatus = 1; // muon from D-meson decay
+
+                        std::cout << decayOutput << " = decayStatus: " << decayStatus << std::endl;
+
+                        muonTuples[iBin]->Fill(iBin, iEvent, muonFinal->pAbs(), muonFinal->pT(), muonFinal->y(), muonFinal->eta() , firstMotherID, lastMotherID, decayStatus);
                     }
-
-                    // decayStatus definition:
-                    // 0: c->D->mu (charm meson)
-                    // 1: b->B->mu (bottom meson)
-                    // 2: b->B->D->mu (bottom to charm meson)
-                    // 3: ?->Baryon_c->mu
-                    // 4: ?->Baryon_b->mu
-                    // 5: ?->Quarkonium_c->mu
-                    // 6: ?->Quarkonium_b->mu
-                    // 7: tau->mu
-
-                    int decayStatusTemp = -1;
-                    if (firstMotherID >= 411 && firstMotherID <= 435) { // D Meson decay
-                        if (lastMotherID >= 411 && lastMotherID <= 435) { // case 0
-                            decayStatusTemp = 0;
-                        } else if (lastMotherID >= 511 && lastMotherID <= 545) { // case 2
-                            decayStatusTemp = 2;
-                        }
-                        cout << decayOutput << "; First: " << firstMotherID << ", Last: " << lastMotherID << endl;
-                    } else if (firstMotherID >= 511 && firstMotherID <= 545) { // B Meson decay
-                        if (lastMotherID >= 511 && lastMotherID <= 545) { // case 1
-                            decayStatusTemp = 1;
-                        }
-                        cout << decayOutput << "; First: " << firstMotherID << ", Last: " << lastMotherID << endl;
-                    } else if (firstMotherID >= 4122 && firstMotherID <= 4444) { // case 3
-                        decayStatusTemp = 3;
-                    } else if (firstMotherID >= 5122 && firstMotherID <= 5554) { // case 4
-                        decayStatusTemp = 4;
-                    } else if (firstMotherID >= 411 && firstMotherID <= 445) { // case 5
-                        decayStatusTemp = 5;
-                    } else if (firstMotherID >= 551 && firstMotherID <= 557) { // case 5
-                        decayStatusTemp = 6;
-                    } else if (firstMotherID == 15) {
-                        decayStatusTemp = 7;
-                    }
-
-                    muonTuples[iBin]->Fill(iBin, iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity, decayStatusTemp, firstMotherID, lastMotherID);
                 }
             }
-
-            // if (softQCD) {
-            //     if (iBin == 0) {
-            //         multiplicities[iEvent] = multCount;
-            //     } else {
-            //         multiplicities[((iBin+(scaleSoftBin-1))*N_events) + iEvent] = multCount;
-            //     }
-            // } else {
-            //     multiplicities[(iBin*N_events) + iEvent] = multCount;
-            // }
         }
 
-        // cross-section for the bin
-        double luminocity_hard = events_run/(pythia.info.sigmaGen()*pow(10,9));
-        binLuminocity[iBin] = luminocity_hard;
+        // generated cross-section info for the bin
+        genInfo->Fill(pythia.info.weightSum(), pythia.info.sigmaGen(), pythia.info.sigmaErr());
 
-        hardPtPart->Scale(1/luminocity_hard, "width");
+        // normalise pT-hat for the bin
+        hardPtPart->Scale(1/(pythia.info.weightSum()), "width");
+        TH1F *sigmaGenHist = new TH1F("hard_QCD_sigma_gen","", N_bins_hard_pt, 0.0, 200.0);
+        for (int iBin = 0; iBin < N_bins_hard_pt; iBin++) {
+            sigmaGenHist->SetBinContent(iBin, pythia.info.sigmaGen());
+            sigmaGenHist->SetBinError(iBin, pythia.info.sigmaErr());
+        }
+        hardPtPart->Multiply(sigmaGenHist);
 
-        // add to final distribution
         hardPt->Add(hardPtPart);
     }
+
+    genInfo->Write();
 
     hardPt->Write();
 
@@ -224,9 +178,6 @@ int main() {
     for (int i = 0; i < nBins; ++i) {
         muonTuples[i]->Write(Form("muon%d", i));
     }
-
-    outFile->WriteObject(&binLuminocity, "luminocity");
-    //outFile->WriteObject(&multiplicities, "multiplicity");
 
     delete outFile;
 
