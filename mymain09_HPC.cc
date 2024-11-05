@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     PythiaParallel pythia; // generate events in parallel
 
     // ROOT file for histograms
-    TFile* outFile = new TFile(Form("mymain09_HPC_root_100k/mymain09_%d.root", iBin), "RECREATE");
+    TFile* outFile = new TFile(Form("mymain09_HPC_root_20M_502/mymain09_%d.root", iBin), "RECREATE");
 
     // pTHat bins
     int nBins;
@@ -37,18 +37,18 @@ int main(int argc, char *argv[]) {
     }
 
     // generation info for normalisation
-    vector<double> genInfo(3);
+    vector<double> genInfo(nBins, 0.0);
 
     // Histograms
     // Total Cross Section
-    int N_bins_hard_pt = 100;
+    int N_bins_hard_pt = 200;
     TH1F *hardPt = new TH1F("pT_hat","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", N_bins_hard_pt, 0.0, 200.0);
 
     // HF Cross Sections
     TNtuple* muonTuple = new TNtuple("muon", "muon", "binTag:eventTag:pAbs:pt:y:eta:firstMother:lastMother:decayStatus");
 
     // Number of events to generate per bin.
-    int N_events = 100000;
+    int N_events = 20000000;
 
     int events_run;
     if (softQCD && iBin == 0) {
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
     pythia.readString("Beams:eCM = 5020.");
     pythia.readString("Tune:pp = 14"); // Monash tune
-    pythia.readString("Parallelism:numThreads = 10");
+    pythia.readString("Parallelism:numThreads = 15"); // number of threads assigned per bin
     
     // D+ forced muon decay
     pythia.readString("411:onMode=off");
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
                 }
                 auto* firstMother = &event[particle->mother1()];
                 decayOutput = decayOutput + " <- ";
-                decayOutput = decayOutput + firstMother->name(); 
+                decayOutput = decayOutput + firstMother->name();
                 decayOutput = decayOutput + " (firstMother)";
 
                 int firstMotherID = abs(firstMother->id());
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
                         else if (lastMotherID >= 511 && lastMotherID <= 545) decayStatus = 2;
                     } else if (lastMotherID >= 511 && lastMotherID <= 545) decayStatus = 1; // muon from D-meson decay
 
-                    std::cout << decayOutput << " = decayStatus: " << decayStatus << std::endl;
+                    // std::cout << decayOutput << " = decayStatus: " << decayStatus << std::endl;
 
                     muonTuple->Fill(iBin, iEvent, muonFinal->pAbs(), muonFinal->pT(), muonFinal->y(), muonFinal->eta() , firstMotherID, lastMotherID, decayStatus);
                 }
@@ -162,12 +162,11 @@ int main(int argc, char *argv[]) {
     });
 
     // cross-section for the bin
-    genInfo[0] = pythia.weightSum();
-    genInfo[1] = pythia.sigmaGen();
-    genInfo[2] = pythia.sigmaErr();
+    double genInfoNorm = pythia.sigmaGen()/pythia.weightSum(); // in mb
+    genInfo[iBin] = genInfoNorm;
+    outFile->WriteObject(&genInfo, "genInfoNorm");
 
-    outFile->WriteObject(&genInfo, "genInfo");
-
+    hardPt->Scale(genInfoNorm, "width");
     hardPt->Write();
     
     muonTuple->Write("muon");

@@ -35,10 +35,14 @@ mymain09:
 
     mymain09Macro_compare_forced_decay:
         Final macro to compare HF->mu output from mymain09 to published data.
-        TODO: also ouput standalone HF->mu hist as input for forward_muon_contributions_hist
 
 mymain09_HPC;
     Same as mymain09, but adjusted to run each pT-hat bin as a seperate job on the HPC cluster. Also generates events in parallel per bin job.
+    Does not account for generated cross-section error - not implemented for pythia parallel.
+
+    mymain09Macro_compare_forced_decay:
+        Final macro to compare HF->mu output from mymain09_HPC to published data.
+        Also ouputs standalone HF->mu hist as input for forward_muon_contributions_hist
 
 binned_mb_template:
     Pythia template to generate minimum bias events, using binned pT-hat generation. Can be copied and adjusted for specific generation.
