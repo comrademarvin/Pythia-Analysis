@@ -5,6 +5,10 @@
 #include <TNtuple.h>
 
 void mymain09Macro_HPC_compare_forced() {
+    // generated pT-hat bins info
+    const int nBins = 7;
+    static const float pT_hat_binEdges[nBins+1] = {0.0, 10.0, 40.0, 70.0, 100.0, 150.0, 200.0, 300.0};
+
     // published data bins
     const Int_t NBINS_PUB = 26;
     Double_t edges_pub[NBINS_PUB + 1] = {2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13, 14, 15, 16.5, 18, 20};
@@ -13,8 +17,10 @@ void mymain09Macro_HPC_compare_forced() {
     TH1F *muonPt = new TH1F("muon_pt","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", 40, 0, 80);
     TH1F *muonPtCompare = new TH1F("muon_pt_compare","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS_PUB, edges_pub);
 
-    for(int iBin = 0; iBin < 7; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain09_HPC_root_1M_502/mymain09_%d.root", iBin), "READ");
+    vector<TH1F*> muonPtContribs(nBins);
+
+    for(int iBin = 0; iBin < nBins; iBin++) {
+        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_502/mymain09_%d.root", iBin), "READ");
 
         std::vector<double> *genInfoNorm;
         infile->GetObject("genInfoNorm", genInfoNorm);
@@ -27,31 +33,16 @@ void mymain09Macro_HPC_compare_forced() {
 
         TH1F *muonPtDCompare = new TH1F("muon_pt_D_compare","", NBINS_PUB, edges_pub);
         TH1F *muonPtD0Compare = new TH1F("muon_pt_D0_compare","", NBINS_PUB, edges_pub);
-        TH1F *muonPtRestCompare = new TH1F("muon_pt_rest_compare","", NBINS_PUB, edges_pub);
+        TH1F *muonPtRestCompare = new TH1F("muon_pt_rest_compare","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS_PUB, edges_pub);
 
         // pt cross-section
-        muonTuple->Draw("pt>>muon_pt_D", "(firstMother == 411) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        muonTuple->Draw("pt>>muon_pt_D0", "(firstMother == 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        muonTuple->Draw("pt>>muon_pt_rest", "(firstMother != 411) && (firstMother != 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        muonTuple->Draw("pt>>muon_pt_D", "(pAbs > 4) && (firstMother == 411) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        muonTuple->Draw("pt>>muon_pt_D0", "(pAbs > 4) && (firstMother == 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        muonTuple->Draw("pt>>muon_pt_rest", "(pAbs > 4) && (firstMother != 411) && (firstMother != 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
 
-        muonTuple->Draw("pt>>muon_pt_D_compare", "(firstMother == 411) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        muonTuple->Draw("pt>>muon_pt_D0_compare", "(firstMother == 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        muonTuple->Draw("pt>>muon_pt_rest_compare", "(firstMother != 411) && (firstMother != 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-
-        // // other background
-        // muonTuple->Draw("pt>>muon_pt_bckgr_part", "(y > 2.5) && (y < 4) && (decayStatus != 0) && (decayStatus != 1) && (decayStatus != 2)");
-
-        // if (iBin == 0) {
-        //     // compare to data
-        //     muonTuple->Draw("pt>>muon_pt_D_compare", "(firstMother == 411) && (pt < 10.0) && (pt > 2.0) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        //     muonTuple->Draw("pt>>muon_pt_D0_compare", "(firstMother == 421) && (pt < 10.0) && (pt > 2.0) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        //     muonTuple->Draw("pt>>muon_pt_rest_compare", "(firstMother != 411) && (firstMother != 421) && (pt < 10.0) && (pt > 2.0) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        // } else {
-        //     // compare to data
-        //     muonTuple->Draw("pt>>muon_pt_D_compare", "(firstMother == 411) && (pt > 2.0) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        //     muonTuple->Draw("pt>>muon_pt_D0_compare", "(firstMother == 421) && (pt > 2.0) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        //     muonTuple->Draw("pt>>muon_pt_rest_compare", "(firstMother != 411) && (firstMother != 421) && (pt > 2.0) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
-        // }
+        muonTuple->Draw("pt>>muon_pt_D_compare", "(pAbs > 4) && (firstMother == 411) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        muonTuple->Draw("pt>>muon_pt_D0_compare", "(pAbs > 4) && (firstMother == 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
+        muonTuple->Draw("pt>>muon_pt_rest_compare", "(pAbs > 4) && (firstMother != 411) && (firstMother != 421) && (decayStatus == 0 || decayStatus == 1 || decayStatus == 2)");
 
         // Scale by Branching Ratio
         double D_BR = 0.176;
@@ -72,6 +63,8 @@ void mymain09Macro_HPC_compare_forced() {
         muonPtRestCompare->Add(muonPtD0Compare);
         muonPtRestCompare->Scale((*genInfoNorm)[iBin]*pow(10,9), "width");
         muonPtCompare->Add(muonPtRestCompare);
+
+        muonPtContribs[iBin] = new TH1F(*muonPtRestCompare);
     }
 
     // Data to compare with
@@ -90,16 +83,28 @@ void mymain09Macro_HPC_compare_forced() {
     // Output file
     TFile* outFile = new TFile("mymain09Hist_HPC_compare_forced.root", "RECREATE");
 
+    // Contribution to HF->mu from each pT-hat bin
+    int lineColours[nBins] = {1,2,3,4,6,7,8};
+    TCanvas *canvasMuonPtContrib = new TCanvas("Muon_sigma_pt_contrib","Muon_sigma_pt_contrib");
+    gPad->SetLogy();
+    auto legendContrib = new TLegend();
+    for(int iBin = 0; iBin < nBins; iBin++) {
+        muonPtContribs[iBin]->SetMinimum(0.01);
+        muonPtContribs[iBin]->SetStats(0);
+        muonPtContribs[iBin]->SetLineColor(lineColours[iBin]);
+        muonPtContribs[iBin]->SetMarkerStyle(20+iBin);
+        muonPtContribs[iBin]->SetMarkerColor(lineColours[iBin]);
+        muonPtContribs[iBin]->Draw("SAME");
+        legendContrib->AddEntry(muonPtContribs[iBin],Form("%.1f <= #hat{p}_{T} < %.1f", pT_hat_binEdges[iBin], pT_hat_binEdges[iBin+1]),"p");
+    }
+    legendContrib->Draw("SAME");
+    canvasMuonPtContrib->Write();
+
     // Pt yield results
     muonPt->SetMinimum(0.01);
     muonPt->Write("HF_muon_pt_contribution");
-    // TCanvas *canvasMuonPt = new TCanvas("Muon_sigma_pt","Muon_sigma_pt");
-    // gPad->SetLogy();
-    // muonPt->SetMinimum(1);
-    // muonPt->Draw();
-    // canvasMuonPt->Write();
 
-    // // Decay Status Contributions
+    // Decay Status Contributions
     TCanvas *canvasMuonPtCompare = new TCanvas("Muon_sigma_pt_compare","Muon_sigma_pt_compare");
     gPad->SetLogy();
 
@@ -107,11 +112,13 @@ void mymain09Macro_HPC_compare_forced() {
     muonPtCompare->SetLineColor(1);
     muonPtCompare->SetMarkerStyle(33);
     muonPtCompare->SetMarkerColor(1);
+    muonPtCompare->SetMinimum(100);
     //muonPtCompare->Draw("SAME");
     pub_data_hist->SetStats(0);
     pub_data_hist->SetLineColor(2);
     pub_data_hist->SetMarkerStyle(21);
     pub_data_hist->SetMarkerColor(2);
+    pub_data_hist->SetMinimum(100);
     //pub_data_hist->Draw("SAME");
 
     auto rp = new TRatioPlot(muonPtCompare, pub_data_hist);
@@ -122,12 +129,12 @@ void mymain09Macro_HPC_compare_forced() {
     // //muonFONLL->Draw("SAME");
 
     auto legendMuon = new TLegend();
-    legendMuon->AddEntry(muonPtCompare,"Pythia (Monash Tune)","p");
-    legendMuon->AddEntry(pub_data_hist,"Published","p");
+    legendMuon->AddEntry(muonPtCompare,"Pythia8 (Monash Tune)","p");
+    legendMuon->AddEntry(pub_data_hist,"ALICE Data","p");
     legendMuon->Draw("SAME");
 
     auto labelCuts = new TLatex();
-    labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.02 TeV, 2.5 < y < 4");
+    labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.02 TeV, 2.5 < #eta < 4");
     labelCuts->DrawLatex(0.0, 0.0, "2 < p_{T} < 20");
     labelCuts->DrawLatex(0.0, 0.0, "|p| > 4");
     labelCuts->Draw("SAME");

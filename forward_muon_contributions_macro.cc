@@ -6,7 +6,7 @@
 
 void forward_muon_contributions_macro() {
     // background from mb
-    TFile* infile_mb = TFile::Open("mymain09Hist_HPC_compare_forced.root", "READ");
+    TFile* infile_mb = TFile::Open("mymain09Hist_HPC_compare_forced_20M_536.root", "READ");
     TH1F* HF_muon_pt = (TH1F*) infile_mb->Get("HF_muon_pt_contribution");
 
     // W

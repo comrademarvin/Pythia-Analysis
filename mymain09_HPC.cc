@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     PythiaParallel pythia; // generate events in parallel
 
     // ROOT file for histograms
-    TFile* outFile = new TFile(Form("mymain09_HPC_root_20M_502/mymain09_%d.root", iBin), "RECREATE");
+    TFile* outFile = new TFile(Form("mymain09_HPC_root_20M_502_tune3/mymain09_%d.root", iBin), "RECREATE");
 
     // pTHat bins
     int nBins;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     }
 
     pythia.readString("Beams:eCM = 5020.");
-    pythia.readString("Tune:pp = 14"); // Monash tune
+    pythia.readString("Tune:pp = 3"); // CTEQ 6L1 PDF
     pythia.readString("Parallelism:numThreads = 15"); // number of threads assigned per bin
     
     // D+ forced muon decay
