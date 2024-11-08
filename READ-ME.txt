@@ -45,5 +45,18 @@ mymain09_HPC;
         Also ouputs standalone HF->mu hist as input for forward_muon_contributions_hist.
         Also outputs plot showing contributions from bins.
 
+mymain10:
+    Looks at the contributions to the production of heavy flavor quarks from the different production mechanisms.
+    TODO: Needs to be updated and improved.
+
+mymain11:
+    Takes either W+/- -> mu input from powheg to shower and determine event multiplicity in either central of forward region.
+
+    mymain11Macro_multiplicity:
+    
+
 binned_mb_template:
     Pythia template to generate minimum bias events, using binned pT-hat generation. Can be copied and adjusted for specific generation.
+
+forward_muon_contributions_macro:
+    Takes the cross-sections for HF->mu from mymain09_HPC and for W->mu from mymain11 to compare them in the forward rapidity region.

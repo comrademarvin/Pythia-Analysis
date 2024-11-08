@@ -18,21 +18,29 @@ int main() {
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
-    vector<double> generatedLuminocity(1);
+    vector<double> genInfo(3);
 
     // Store muons from W for analysis
     TNtuple* muonTuple = new TNtuple("muon", "muon", "eventTag:pAbs:pt:y:eta");
 
     // Store charged particles and event charged particle count for multiplicity analysis
-    // TNtuple* chargedTuple = new TNtuple("charged", "charged", "eventTag:pAbs:pt:y:eta");
     vector<int> multiplicities(generatedEvents, -1);
+    bool multCentral = true; // either estimate multiplicity in the central or forward region
+    float multEtaMin, multEtaMax;
+    if (multCentral) {
+        multEtaMin = -1.0; // range of SPD in ITS
+        multEtaMax = 1.0;
+    } else {
+        multEtaMin = 2.45; // range of MFT
+        multEtaMax = 3.6;
+    }
 
     // Store W mother for physics kinematics
     //TNtuple* WMotherTuple = new TNtuple("W_mother", "W_mother", "eventTag:pAbs:pt:y:eta");
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
-    pythia.readString("Beams:LHEF = pwgevents_Josh.lhe");
+    pythia.readString("Beams:LHEF = pwgevents_W+_10k.lhe");
     pythia.readString("Tune:pp = 14"); // Monash tune
     //pythia.readString("Parallelism:numThreads = 5");
 
@@ -82,15 +90,16 @@ int main() {
         
         int nCharged = 0;
         for (int i = 0; i < pythia.event.size(); ++i) {
+            auto* particle = &pythia.event[i];
             int motherIndex;
-            if (pythia.event[i].isCharged()) {
+            if (particle->isCharged() && (particle->eta() > multEtaMin) && (particle->eta() < multEtaMax)) {
                 // only consider primary charged particles (According to ALICE's definition of primary)
-                double particleLifetime = (pythia.event[i].tau())/10; // Convert mm/c to cm/c
+                double particleLifetime = (particle->tau())/10; // Convert mm/c to cm/c
                 bool isPrimary = true;
                 if (particleLifetime < 1) {
                     isPrimary = false;
                 } else {
-                    motherIndex = pythia.event[i].mother1();
+                    motherIndex = particle->mother1();
                     double motherLifetime;
                 
                     while (!pythia.event[motherIndex].isQuark() && !pythia.event[motherIndex].isGluon())  {
@@ -104,23 +113,16 @@ int main() {
                 }
 
                 // only consider primary charged particles in the central barrel region
-                if (isPrimary && (abs(pythia.event[i].eta()) < 1)) {
-                    nCharged++;
-                }
+                if (isPrimary) nCharged++;
             }
 
-            int particleID = abs(pythia.event[i].id());
+            // look for muon directly decaying from W
+            int particleID = abs(particle->id());
             if (particleID == 13) { // is muon
-                motherIndex = pythia.event[i].mother1();
+                motherIndex = particle->mother1();
                 int firstMotherID = abs(pythia.event[motherIndex].id());
                 if (firstMotherID == 24) { // from W decay
-                    // For muon
-                    double particlePAbs = pythia.event[i].pAbs();
-                    double particlePt = pythia.event[i].pT();
-                    double particleRapidity = pythia.event[i].y();
-                    double particlePseudorapidity = pythia.event[i].eta();
-
-                    muonTuple->Fill(iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity);
+                    muonTuple->Fill(iEvent, particle->pAbs(), particle->pT(), particle->y(), particle->eta());
                     muonFound++;
 
                     // For W mother
@@ -136,21 +138,20 @@ int main() {
         ++iEvent;
     }
 
-    //pythia.stat();
-
     std::cout << "Count of Events: " << iEvent << std::endl;
     std::cout << "Count of W->mu found: " << muonFound << std::endl;
 
-    double luminocity = iEvent/(pythia.info.sigmaGen());
-    generatedLuminocity[0] = luminocity;
+    // Luminocity for normalization
+    genInfo[0] = pythia.info.weightSum();
+    genInfo[1] = pythia.info.sigmaGen();
+    genInfo[2] = pythia.info.sigmaErr();
 
-    hardPt->Scale(1/luminocity, "width");
+    hardPt->Scale(genInfo[1]/genInfo[0], "width");
     hardPt->Write();
 
     muonTuple->Write("W_muon");
-    outFile->WriteObject(&generatedLuminocity, "luminocity");
+    outFile->WriteObject(&genInfo, "genInfo");
     outFile->WriteObject(&multiplicities, "event_multiplicity");
-
 
     delete outFile;
 
