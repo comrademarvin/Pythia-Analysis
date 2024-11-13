@@ -20,7 +20,7 @@ void mymain09Macro_HPC_compare_forced() {
     vector<TH1F*> muonPtContribs(nBins);
 
     for(int iBin = 0; iBin < nBins; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_502_tune3/mymain09_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_502_tune5/mymain09_%d.root", iBin), "READ");
 
         std::vector<double> *genInfoNorm;
         infile->GetObject("genInfoNorm", genInfoNorm);

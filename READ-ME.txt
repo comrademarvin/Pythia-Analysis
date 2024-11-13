@@ -45,6 +45,9 @@ mymain09_HPC;
         Also ouputs standalone HF->mu hist as input for forward_muon_contributions_hist.
         Also outputs plot showing contributions from bins.
 
+    mymain09Macro_compare_forced_tunes:
+        Final macro to compare HF->mu output from mymain09_HPC for different Pythia tunes.
+
 mymain10:
     Looks at the contributions to the production of heavy flavor quarks from the different production mechanisms.
     TODO: Needs to be updated and improved.
