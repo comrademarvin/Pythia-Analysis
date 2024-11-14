@@ -7,19 +7,18 @@
 #include "TGraph.h"
 #include <TNtuple.h>
 
-// void processWFile(string filename) {
-
-// }
-
 void mymain11Macro_multiplicity() {
     // const Int_t multBinCount = 5;
     // Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
 
+    // const Int_t multBinCount = 7;
+    // Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
+
     const Int_t multBinCount = 7;
-    Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
+    Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
 
     const Int_t pTBinCount = 50;
-    const Int_t pTBinMin = 10;
+    const Int_t pTBinMin = 30;
     const Int_t pTBinMax = 80;
 
     Double_t multBinsAverage[multBinCount+1];
@@ -27,15 +26,16 @@ void mymain11Macro_multiplicity() {
     // Access Minimum Bias data
     TFile* infile_mb = TFile::Open("mymain01Macro.root", "READ");
     TH1D* mb_mult_central = (TH1D*) infile_mb->Get("multiplicity_events_central");
+    TH1D* mb_mult_central_raw = (TH1D*) infile_mb->Get("multiplicity_events_central_raw");
 
     // normalise charged particle multiplicity by the average
-    float mb_mult_average = mb_mult_central->GetMean();
+    float mb_mult_average = mb_mult_central_raw->GetMean()/2; // use mult average before binning
     for (int iMultBin = 0; iMultBin < multBinCount+1; iMultBin++) {
         multBinsAverage[iMultBin] = multBins[iMultBin]/mb_mult_average;
     } 
 
     // Access W+/- showered data
-    TFile* infile = TFile::Open("mymain11_W+_10M.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W+_500k_new.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 40, 0, 80);
@@ -50,8 +50,8 @@ void mymain11Macro_multiplicity() {
     }
 
     // Read in generated cross-section as integrated luminocity
-    std::vector<double> *luminocity;
-    infile->GetObject("luminocity", luminocity);
+    std::vector<double> *genInfo;
+    infile->GetObject("genInfo", genInfo);
 
     // Read in multiplicities of events
     std::vector<int> *event_mult;
@@ -59,7 +59,6 @@ void mymain11Macro_multiplicity() {
     int event_count = event_mult->size();
 
     // iterate through muons and connect to event multiplicities
-    // For W+ -> muon
     TNtuple *muonTuple = (TNtuple*)infile->Get("W_muon");
     int muons_count = muonTuple->GetEntries();
     Float_t eventIndex, eta, pt, rapidity, pAbs;
@@ -95,16 +94,16 @@ void mymain11Macro_multiplicity() {
     };
 
     // Cross Section Scaling
-    W_muon_mult_raw->Scale(1/((*luminocity)[0]), "width");
-    W_muon_multiplicity->Scale(1/((*luminocity)[0]), "width");
-    W_muon_pt->Scale(1/((*luminocity)[0]), "width");
-    W_muon_pt_y->Scale(1/((*luminocity)[0]), "width");
-    W_muon_yield_mult->Scale(1/((*luminocity)[0]), "width");
+    W_muon_mult_raw->Scale((*genInfo)[1]/(*genInfo)[0], "width");
+    W_muon_multiplicity->Scale((*genInfo)[1]/(*genInfo)[0], "width");
+    W_muon_pt->Scale((*genInfo)[1]/(*genInfo)[0], "width");
+    W_muon_pt_y->Scale((*genInfo)[1]/(*genInfo)[0], "width");
+    W_muon_yield_mult->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_yield_mult->Scale(1/((4-2.5)*(pTBinMax-pTBinMin)));
 
     vector<TH1D*> W_muon_pt_mult_binned_cs(multBinCount);
     for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
-        W_muon_pt_mult_binned[iMultBin]->Scale(1/((*luminocity)[0]), "width");
+        W_muon_pt_mult_binned[iMultBin]->Scale((*genInfo)[1]/(*genInfo)[0], "width");
         W_muon_pt_mult_binned_cs[iMultBin] = new TH1D(*(W_muon_pt_mult_binned[iMultBin]));
     }
 

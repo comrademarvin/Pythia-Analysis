@@ -10,8 +10,10 @@ void mymain01Macro() {
     static const double binEdges[nBins+1] = {0.0, 15.0, 30.0, 50.0, 70.0, 100.0, 150.0};
     // const Int_t multBinCount = 5;
     // Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
+    // const Int_t multBinCount = 7;
+    // Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
     const Int_t multBinCount = 7;
-    Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
+    Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
 
     // pThat multiplicity
     // histogram for input for multiplicity analysis

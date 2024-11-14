@@ -1,6 +1,5 @@
 #include "Pythia8/Pythia.h"
 #include "Pythia8Plugins/PowhegHooks.h"
-//#include "Pythia8Plugins/HepMC2.h"
 #include "TFile.h"
 #include "TH1.h"
 #include <TNtuple.h>
@@ -11,10 +10,10 @@ int main() {
     // Generator
     Pythia pythia;
 
-    int generatedEvents = 10000;
+    int generatedEvents = 500000;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain11_W+_10k.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11_W-_500k_new.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
@@ -31,8 +30,8 @@ int main() {
         multEtaMin = -1.0; // range of SPD in ITS
         multEtaMax = 1.0;
     } else {
-        multEtaMin = 2.45; // range of MFT
-        multEtaMax = 3.6;
+        multEtaMin = 2.5; // range of V0 (2.8 < eta < 5.1)
+        multEtaMax = 4.0;
     }
 
     // Store W mother for physics kinematics
@@ -40,7 +39,7 @@ int main() {
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
-    pythia.readString("Beams:LHEF = pwgevents_W+_10k.lhe");
+    pythia.readString("Beams:LHEF = pwgevents_W-_500k.lhe");
     pythia.readString("Tune:pp = 14"); // Monash tune
     //pythia.readString("Parallelism:numThreads = 5");
 
@@ -91,6 +90,8 @@ int main() {
         int nCharged = 0;
         for (int i = 0; i < pythia.event.size(); ++i) {
             auto* particle = &pythia.event[i];
+            int particleID = abs(particle->id());
+
             int motherIndex;
             if (particle->isCharged() && (particle->eta() > multEtaMin) && (particle->eta() < multEtaMax)) {
                 // only consider primary charged particles (According to ALICE's definition of primary)
@@ -116,13 +117,24 @@ int main() {
                 if (isPrimary) nCharged++;
             }
 
-            // look for muon directly decaying from W
-            int particleID = abs(particle->id());
-            if (particleID == 13) { // is muon
-                motherIndex = particle->mother1();
-                int firstMotherID = abs(pythia.event[motherIndex].id());
+            if (particleID == 13 && particle->isFinal()) { // final state muons in forward rapidity region
+                // find first non-copy or muon mother
+                auto* muonFinal = particle;
+                auto* firstMother = particle;
+                string decayOutput = "==== Here forward muon decay: mu";
+                while (((firstMother->mother2() != 0) && (firstMother->mother1() == firstMother->mother2())) || (abs(firstMother->id()) == 13)) {
+                    firstMother = &pythia.event[firstMother->mother1()];
+                    string partOutput = " <- " + firstMother->name();
+                    decayOutput = decayOutput + partOutput;
+                }
+                decayOutput = decayOutput + " (firstMother)";
+                decayOutput = decayOutput + " <- ";
+                decayOutput = decayOutput + pythia.event[firstMother->mother1()].name();
+                //std::cout << decayOutput << std::endl;
+
+                int firstMotherID = abs(firstMother->id());
                 if (firstMotherID == 24) { // from W decay
-                    muonTuple->Fill(iEvent, particle->pAbs(), particle->pT(), particle->y(), particle->eta());
+                    muonTuple->Fill(iEvent, muonFinal->pAbs(), muonFinal->pT(), muonFinal->y(), muonFinal->eta());
                     muonFound++;
 
                     // For W mother

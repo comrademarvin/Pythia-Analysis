@@ -56,6 +56,11 @@ mymain11:
     Takes either W+/- -> mu input from powheg to shower and determine event multiplicity in either central of forward region.
 
     mymain11Macro_multiplicity:
+        Takes input from mymain11 (for either W+/-) and outputs the self-normalised multiplicity dependence of the production cross-section.
+        Also requires input from mymain01Macro for minimum bias multiplicity.
+        Output is used by mymain11Macro_join
+
+    mymain11Macro_join:
     
 
 binned_mb_template:
