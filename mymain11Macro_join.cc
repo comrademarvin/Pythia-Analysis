@@ -8,12 +8,15 @@ void mymain11Macro_join() {
     // const Int_t multBinCount = 5;
     // Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
 
-    const Int_t multBinCount = 7;
-    Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
+    // const Int_t multBinCount = 7;
+    // Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
 
-    const Int_t pTBinCount = 50;
-    const Int_t pTBinMin = 10;
-    const Int_t pTBinMax = 80;
+    const Int_t multBinCount = 7;
+    Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
+
+    const Int_t pTBinCount = 60;
+    const float pTBinMin = 30.0;
+    const float pTBinMax = 60.0;
 
     Double_t multBinsAverage[multBinCount+1];
 
@@ -90,7 +93,7 @@ void mymain11Macro_join() {
         double multBinCenter = multBinsAverage[iMultBin] + ((multBinsAverage[iMultBin+1] - multBinsAverage[iMultBin])/2);
         for (int iPtBin = 1; iPtBin <= pTBinCount; iPtBin++) {
             double yield_pt_bin = (W_muon_pt_mult_binned[iMultBin])->GetBinContent(iPtBin);
-            multProfile->Fill(multBinCenter, yield_pt_bin/((4-2.5)*((pTBinMax-pTBinMin)/pTBinCount)), 1);
+            multProfile->Fill(multBinCenter, yield_pt_bin/(4-2.5), 1);
         }
     }
 
@@ -123,8 +126,8 @@ void mymain11Macro_join() {
     W_muon_pt_minus->Draw("SAME");
     auto legendPt = new TLegend();
     legendPt->AddEntry(W_muon_pt,"W #rightarrow #mu","p");
-    legendPt->AddEntry(W_muon_pt_plus,"W+ #rightarrow #mu^{+}","p");
-    legendPt->AddEntry(W_muon_pt_minus,"W- #rightarrow #mu^{-}","p");
+    legendPt->AddEntry(W_muon_pt_plus,"W^{+} #rightarrow #mu^{+}","p");
+    legendPt->AddEntry(W_muon_pt_minus,"W^{-} #rightarrow #mu^{-}","p");
     legendPt->Draw("SAME");
     auto labelCuts = new TLatex();
     labelCuts->DrawLatex(0.0, 0.0, "POWHEG pp @ #sqrt{s} = 5.36 TeV");
@@ -138,7 +141,7 @@ void mymain11Macro_join() {
     TCanvas *canvasMuonMultRaw = new TCanvas("W_muon_mult_raw","W_muon_mult_raw");
     gPad->SetLogy();
     mb_mult_central_raw->GetYaxis()->SetTitle("#frac{d#sigma}{dN_{ch}} (mb)");
-    mb_mult_central_raw->SetMinimum(0.000000000001);
+    mb_mult_central_raw->SetMinimum(0.00000000000001);
     mb_mult_central_raw->SetStats(0);
     mb_mult_central_raw->SetLineColor(1);
     mb_mult_central_raw->SetMarkerStyle(25);
@@ -181,11 +184,11 @@ void mymain11Macro_join() {
     TCanvas *canvasMuonPtBins = new TCanvas("W_muon_pt_mult_binned","W_muon_pt_mult_binned");
     gPad->SetLogy();
     auto legendPtBins = new TLegend();
-    int lineColors[multBinCount] = {1,2,3,4,6,28,7};
+    int lineColors[multBinCount] = {1,2,3,4,6,28,16};
     int lineMarkers[multBinCount] = {24,25,26,27,28,30,32};
     for (int iBin = 0; iBin < multBinCount; iBin++) {
         W_muon_pt_mult_binned[iBin]->SetStats(0);
-        W_muon_pt_mult_binned[iBin]->SetMinimum(0.00001);
+        W_muon_pt_mult_binned[iBin]->SetMinimum(0.001);
         W_muon_pt_mult_binned[iBin]->SetLineColor(lineColors[iBin]);
         W_muon_pt_mult_binned[iBin]->SetMarkerStyle(lineMarkers[iBin]);
         W_muon_pt_mult_binned[iBin]->SetMarkerColor(lineColors[iBin]);

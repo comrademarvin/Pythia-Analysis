@@ -13,7 +13,7 @@ int main() {
     int generatedEvents = 500000;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain11_W-_500k_new.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11_W-_500k_forward.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
@@ -24,7 +24,7 @@ int main() {
 
     // Store charged particles and event charged particle count for multiplicity analysis
     vector<int> multiplicities(generatedEvents, -1);
-    bool multCentral = true; // either estimate multiplicity in the central or forward region
+    bool multCentral = false; // either estimate multiplicity in the central or forward region
     float multEtaMin, multEtaMax;
     if (multCentral) {
         multEtaMin = -1.0; // range of SPD in ITS

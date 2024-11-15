@@ -16,6 +16,17 @@ int main() {
 
     vector<double> binLuminocity(nBins); // luminocity from generated process sigma to calculate cross-sections
 
+    // either estimate multiplicity in the central or forward region
+    bool multCentral = false;
+    float multEtaMin, multEtaMax;
+    if (multCentral) {
+        multEtaMin = -1.0; // range of SPD in ITS
+        multEtaMax = 1.0;
+    } else {
+        multEtaMin = 2.5; // range of V0 (2.8 < eta < 5.1)
+        multEtaMax = 4.0;
+    }
+
     // Histograms
     // Total Cross Section
     TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 150, 0.0, 150.0);
@@ -32,9 +43,8 @@ int main() {
 
     pythia.readString("Beams:eCM = 5360.");
     pythia.readString("Tune:pp = 14");
-    //pythia.readString("PDF:pSet = 9");
 
-    int N_events = 1000;
+    int N_events = 1000000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
         if (iBin == 0) {
@@ -68,14 +78,15 @@ int main() {
 
             // iterate through event record
             for (int i = 0; i < pythia.event.size(); ++i) {
-                if (pythia.event[i].isCharged()) {
+                auto* particle = &pythia.event[i];
+                if (particle->isCharged() && (particle->eta() > multEtaMin) && (particle->eta() < multEtaMax)) {
                     // only consider primary charged particles (According to ALICE's definition of primary)
-                    double particleLifetime = (pythia.event[i].tau())/10; // Convert mm/c to cm/c
+                    double particleLifetime = (particle->tau())/10; // Convert mm/c to cm/c
                     bool isPrimary = true;
                     if (particleLifetime < 1) {
                         isPrimary = false;
                     } else {
-                        int motherIndex = pythia.event[i].mother1();
+                        int motherIndex = particle->mother1();
                         double motherLifetime;
                     
                         while (!pythia.event[motherIndex].isQuark() && !pythia.event[motherIndex].isGluon())  {
@@ -88,15 +99,14 @@ int main() {
                         }
                     }
 
-                    // only consider primary charged particles in the central barrel region
-                    double particlePseudorapidity = pythia.event[i].eta();
-
-                    if (isPrimary && (abs(particlePseudorapidity) < 1)) {
-                        int particleID = pythia.event[i].id();
-                        double particlePAbs = pythia.event[i].pAbs();
-                        double particlePt = pythia.event[i].pT();
-                        double particleRapidity = pythia.event[i].y();
-                        double particleCharge = pythia.event[i].charge();
+                    // only consider primary charged particles in the region of interest
+                    if (isPrimary) {
+                        int particleID = particle->id();
+                        double particlePseudorapidity = particle->eta();
+                        double particlePAbs = particle->pAbs();
+                        double particlePt = particle->pT();
+                        double particleRapidity = particle->y();
+                        double particleCharge = particle->charge();
 
                         chargedTuples[iBin]->Fill(iBin, iEvent, particlePAbs, particlePt, particleRapidity, particlePseudorapidity, particleID, particleCharge);
                     }
@@ -112,7 +122,7 @@ int main() {
         hardPt->Add(hardPtPart);
     }
 
-    TFile* outFile = new TFile("mymain01.root", "RECREATE");
+    TFile* outFile = new TFile("mymain01_1M_536_forward.root", "RECREATE");
 
     hardPt->Write();
 
