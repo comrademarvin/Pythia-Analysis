@@ -79,7 +79,7 @@ int main() {
             // iterate through event record
             for (int i = 0; i < pythia.event.size(); ++i) {
                 auto* particle = &pythia.event[i];
-                if (particle->isCharged() && (particle->eta() > multEtaMin) && (particle->eta() < multEtaMax)) {
+                if (particle->isCharged() && (particle->eta() > multEtaMin) && (particle->eta() < multEtaMax)) { // in region of interest
                     // only consider primary charged particles (According to ALICE's definition of primary)
                     double particleLifetime = (particle->tau())/10; // Convert mm/c to cm/c
                     bool isPrimary = true;

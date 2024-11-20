@@ -14,8 +14,15 @@ void mymain11Macro_multiplicity() {
     // const Int_t multBinCount = 7;
     // Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
 
+    // // central mult bins
+    // const Int_t multBinCount = 7;
+    // Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
+    // const float multRawMax = 120.00;
+
+    // forward mult bins
     const Int_t multBinCount = 7;
-    Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
+    Double_t multBins[multBinCount+1] = {0, 3, 6, 9, 12, 15, 18, 21};
+    const float multRawMax = 60.00;
 
     const Int_t pTBinCount = 60;
     const float pTBinMin = 30.0;
@@ -24,23 +31,23 @@ void mymain11Macro_multiplicity() {
     Double_t multBinsAverage[multBinCount+1];
 
     // Access Minimum Bias data
-    TFile* infile_mb = TFile::Open("mymain01Macro.root", "READ");
-    TH1D* mb_mult_central = (TH1D*) infile_mb->Get("multiplicity_events_central");
-    TH1D* mb_mult_central_raw = (TH1D*) infile_mb->Get("multiplicity_events_central_raw");
+    TFile* infile_mb = TFile::Open("mymain01Macro_forward.root", "READ");
+    TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
+    TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
 
     // normalise charged particle multiplicity by the average
-    float mb_mult_average = mb_mult_central_raw->GetMean()/2; // use mult average before binning
+    float mb_mult_average = mb_mult_raw->GetMean()/2; // use mult average before binning
     for (int iMultBin = 0; iMultBin < multBinCount+1; iMultBin++) {
         multBinsAverage[iMultBin] = multBins[iMultBin]/mb_mult_average;
     } 
 
     // Access W+/- showered data
-    TFile* infile = TFile::Open("mymain11_W+_10M_central.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W+_10M_forward.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 40, 0, 80);
     TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
-    TH1D* W_muon_mult_raw = new TH1D("W_muon_mult_raw", "Primary charged particle dependence;N_{ch};#sigma_{W->#mu} (mb)", 60, 0, 120);
+    TH1D* W_muon_mult_raw = new TH1D("W_muon_mult_raw", "Primary charged particle dependence;N_{ch};#sigma_{W->#mu} (mb)", 60, 0, multRawMax);
     TH1D* W_muon_multiplicity = new TH1D("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins);
     TH1D* W_muon_yield_mult = new TH1D("W_muon_yield_mult", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1}/<dN_{ch}/d#eta>;#frac{d^{2}N}{dp_{T}dy}", multBinCount, multBinsAverage);
 
@@ -112,7 +119,7 @@ void mymain11Macro_multiplicity() {
     // Cross section ratio multiplicity binned
     TH1D* cs_ratio = new TH1D();
 
-    *cs_ratio = (*W_muon_multiplicity)/(*mb_mult_central);
+    *cs_ratio = (*W_muon_multiplicity)/(*mb_mult);
 
     TH1D* W_muon_yield_mult_mb = new TH1D();
     *W_muon_yield_mult_mb = (*W_muon_yield_mult)*(*cs_ratio); // normalise yield by mb ratio
@@ -126,8 +133,8 @@ void mymain11Macro_multiplicity() {
         W_muon_pt_mult_binned[iMultBin]->Scale(1/W_muon_yield_mult->Integral());
         for (int iPtBin = 1; iPtBin <= pTBinCount; iPtBin++) {
             double yield_pt_bin = (W_muon_pt_mult_binned[iMultBin])->GetBinContent(iPtBin);
-            double y_pt_norm_factor = (4-2.5); //*((pTBinMax-pTBinMin)/pTBinCount); - already normalise for pT-bins above
-            double yield_pt_bin_norm = yield_pt_bin/y_pt_norm_factor;
+            double y_norm_factor = (4-2.5); //*((pTBinMax-pTBinMin)/pTBinCount); - already normalise for pT-bins above
+            double yield_pt_bin_norm = yield_pt_bin/y_norm_factor;
 
             multProfile->Fill(multBinCenter, yield_pt_bin_norm, 1);
         }
@@ -147,14 +154,14 @@ void mymain11Macro_multiplicity() {
 
     TCanvas *canvasMuonMult = new TCanvas("Muon_mult","Muon_mult");
     gPad->SetLogy();
-    mb_mult_central->SetMinimum(0.00000000000001);
-    mb_mult_central->SetLineColor(1);
-    mb_mult_central->Draw("SAME");
+    mb_mult->SetMinimum(0.00000000000001);
+    mb_mult->SetLineColor(1);
+    mb_mult->Draw("SAME");
     W_muon_multiplicity->SetStats(0);
     W_muon_multiplicity->SetMinimum(0.00000000000001);
     W_muon_multiplicity->Draw("SAME");
     auto legendMult = new TLegend();
-    legendMult->AddEntry(mb_mult_central,"Minimum Bias","l");
+    legendMult->AddEntry(mb_mult,"Minimum Bias","l");
     legendMult->AddEntry(W_muon_multiplicity,"W->#mu","l");
     legendMult->Draw("SAME");
     canvasMuonMult->Write();
@@ -163,7 +170,7 @@ void mymain11Macro_multiplicity() {
     cs_ratio->SetStats(0);
     //cs_ratio->SetMinimum(0.00000001);
     cs_ratio->SetTitle("Ratio of W muon Cross Section wrt Minimum Bias");
-    cs_ratio->GetYaxis()->SetTitle("#sigma_{W->#mu}/#sigma_{MB}");
+    cs_ratio->GetYaxis()->SetTitle("#sigma_{W#rightarrow#mu}/#sigma_{MB}");
     cs_ratio->Draw();
     canvasMultBinned->Write();
 
@@ -215,6 +222,7 @@ void mymain11Macro_multiplicity() {
     auto gLine = new TGraph(8, x, y);
     gLine->Draw("SAME");
     auto legendLinear = new TLegend();
+    legendLinear->AddEntry(W_muon_norm_yield_mult, "W #rightarrow #mu", "l");
     legendLinear->AddEntry(fitLinear, "Linear Best Fit");
     legendLinear->AddEntry(gLine, "y=x", "l");
     legendLinear->Draw("SAME");
@@ -223,7 +231,7 @@ void mymain11Macro_multiplicity() {
     delete outFile;
 
     // save histograms to join W+/- analysis
-    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_plus.root", "RECREATE");
+    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_plus_forward.root", "RECREATE");
 
     // kinematics
     W_muon_pt->Write();

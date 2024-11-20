@@ -11,10 +11,10 @@ using namespace Pythia8;
 
 int main() {
     // ROOT output file
-    TFile* outFile = new TFile("mymain05_1M.root", "RECREATE");
+    TFile* outFile = new TFile("mymain05_2M.root", "RECREATE");
 
     // Number of events to generate per bin.
-    int N_events = 1000000;
+    int N_events = 2000000;
 
     // Turn SoftQCD on/off
     bool softQCD = true;
@@ -96,13 +96,13 @@ int main() {
                 if (particleID == 13 && particle->isFinal() && (particle->eta()>2.5) && (particle->eta()<4.0)) { // final state muons in forward rapidity region
                     // find first non-copy mother
                     auto* muonFinal = particle;
-                    std::cout << "==== Here forward muon decay: mu";
+                    //std::cout << "==== Here forward muon decay: mu";
                     while ((particle->mother2() != 0) && (particle->mother1() == particle->mother2())) {
                         particle = &pythia.event[particle->mother1()];
-                        std::cout << " <- " << abs(particle->id());
+                        //std::cout << " <- " << abs(particle->id());
                     }
                     auto* firstMother = &pythia.event[particle->mother1()];
-                    std::cout << " <- " << abs(firstMother->id()) << " (firstMother)" << std::endl;
+                    //std::cout << " <- " << abs(firstMother->id()) << " (firstMother)" << std::endl;
 
                     muonTuples[iBin]->Fill(iBin, iEvent, muonFinal->pAbs(), muonFinal->pT(), muonFinal->y(), muonFinal->eta(), abs(firstMother->id()));
                 }

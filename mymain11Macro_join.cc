@@ -4,15 +4,15 @@
 #include "TLatex.h"
 
 void mymain11Macro_join() {
-    // bin constants
-    // const Int_t multBinCount = 5;
-    // Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
-
-    // const Int_t multBinCount = 7;
-    // Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
-
+    // central mult bins
     const Int_t multBinCount = 7;
     Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
+    const float multRawMax = 120.00;
+
+    // // forward mult bins
+    // const Int_t multBinCount = 7;
+    // Double_t multBins[multBinCount+1] = {0, 3, 6, 9, 12, 15, 18, 21};
+    // const float multRawMax = 60.00;
 
     const Int_t pTBinCount = 60;
     const float pTBinMin = 30.0;
@@ -21,22 +21,22 @@ void mymain11Macro_join() {
     Double_t multBinsAverage[multBinCount+1];
 
     // Access Minimum Bias data
-    TFile* infile_mb = TFile::Open("mymain01Macro.root", "READ");
-    TH1D* mb_mult_central = (TH1D*) infile_mb->Get("multiplicity_events_central");
-    TH1D* mb_mult_central_raw = (TH1D*) infile_mb->Get("multiplicity_events_central_raw");
+    TFile* infile_mb = TFile::Open("mymain01Macro_central.root", "READ");
+    TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
+    TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
 
-    std::cout << "Mean from mult binned: " << mb_mult_central->GetMean() << std::endl;
-    std::cout << "Mean from raw binned: " << mb_mult_central_raw->GetMean()/2 << std::endl;
+    std::cout << "Mean from mult binned: " << mb_mult->GetMean() << std::endl;
+    std::cout << "Mean from raw binned: " << mb_mult_raw->GetMean()/2 << std::endl;
 
     // normalise charged particle multiplicity by the average
-    float mb_mult_average = mb_mult_central_raw->GetMean()/2;
+    float mb_mult_average = mb_mult_raw->GetMean()/2;
     for (int iMultBin = 0; iMultBin < multBinCount+1; iMultBin++) {
         multBinsAverage[iMultBin] = multBins[iMultBin]/mb_mult_average;
     }
 
     // W+/- output files from mymain11Macro_multiplicity
-    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus.root", "READ");
-    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus.root", "READ");
+    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus_central.root", "READ");
+    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus_central.root", "READ");
 
     // kinematics
     TH1F* W_muon_pt_plus = (TH1F*)infile_W_plus->Get("W_muon_pt");
@@ -103,7 +103,7 @@ void mymain11Macro_join() {
     *W_muon_norm_yield_mult = (*W_muon_yield_mult_mb)/(*W_muon_yield_average); // normalise yield by pt average
 
     // plotting
-    TFile* outFile = new TFile("mymain11Hist_joined.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11Hist_joined_central.root", "RECREATE");
 
     // kinematics
     TCanvas *canvasMuonPt = new TCanvas("W_muon_pt","W_muon_pt");
@@ -140,20 +140,20 @@ void mymain11Macro_join() {
     // full cross-section not normalised multiplicity, display bins
     TCanvas *canvasMuonMultRaw = new TCanvas("W_muon_mult_raw","W_muon_mult_raw");
     gPad->SetLogy();
-    mb_mult_central_raw->GetYaxis()->SetTitle("#frac{d#sigma}{dN_{ch}} (mb)");
-    mb_mult_central_raw->SetMinimum(0.00000000000001);
-    mb_mult_central_raw->SetStats(0);
-    mb_mult_central_raw->SetLineColor(1);
-    mb_mult_central_raw->SetMarkerStyle(25);
-    mb_mult_central_raw->SetMarkerColor(1);
-    mb_mult_central_raw->Draw("SAME");
+    mb_mult_raw->GetYaxis()->SetTitle("#frac{d#sigma}{dN_{ch}} (mb)");
+    mb_mult_raw->SetMinimum(0.00000000000001);
+    mb_mult_raw->SetStats(0);
+    mb_mult_raw->SetLineColor(1);
+    mb_mult_raw->SetMarkerStyle(25);
+    mb_mult_raw->SetMarkerColor(1);
+    mb_mult_raw->Draw("SAME");
     W_muon_mult_raw->SetLineColor(3);
     W_muon_mult_raw->SetMarkerStyle(4);
     W_muon_mult_raw->SetMarkerColor(3);
     W_muon_mult_raw->SetStats(0);
     W_muon_mult_raw->Draw("SAME");
     auto legendMultRaw = new TLegend();
-    legendMultRaw->AddEntry(mb_mult_central_raw,"Minimum Bias (|#eta| < 1.0)","p");
+    legendMultRaw->AddEntry(mb_mult_raw,"Minimum Bias (|#eta| < 1.0)","p");
     legendMultRaw->AddEntry(W_muon_mult_raw,"W #rightarrow #mu","p");
     legendMultRaw->Draw("SAME");
     canvasMuonMultRaw->Write();
@@ -167,6 +167,7 @@ void mymain11Macro_join() {
 
     // cross-section ratio
     TCanvas *canvasMuonRatio = new TCanvas("cs_ratio","cs_ratio");
+    cs_ratio->GetYaxis()->SetTitle("#sigma_{W#rightarrow#mu}/#sigma_{MB}");
     cs_ratio->SetLineColor(4);
     cs_ratio->SetMarkerStyle(8);
     cs_ratio->SetMarkerColor(4);
@@ -221,6 +222,7 @@ void mymain11Macro_join() {
     auto gLine = new TGraph(8, x, y);
     gLine->Draw("SAME");
     auto legendLinear = new TLegend();
+    legendLinear->AddEntry(W_muon_norm_yield_mult,"W #rightarrow #mu","p");
     legendLinear->AddEntry(fitLinear, "Linear Best Fit");
     legendLinear->AddEntry(gLine, "y = x", "l");
     legendLinear->Draw("SAME");
