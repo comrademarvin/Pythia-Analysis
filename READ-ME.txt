@@ -20,6 +20,8 @@ mymain05:
 
     mymain05Macro: plots the total generated cross-section for MB and also the forward muon core contributions in MB.
 
+    mymain05_HPC & mymain05Macro: Does the same as mymain05, but adapted to run bins as separate jobs on HPC, with events generated in parallel.
+
 mymain06:
     Investigation of production mechanisms that lead to HF production - needs improvement (TODO)
 

@@ -85,8 +85,6 @@ int main(int argc, char *argv[]) {
 
     if (!pythia.init()) return 1;	//initiate pythia and output an error if it doesn't initiate.
 
-    int eventCount = 0;
-
     int iEvent = 0;
     pythia.run(events_run, [&](Pythia* pythiaPtr)
 	{
@@ -98,8 +96,6 @@ int main(int argc, char *argv[]) {
 
         if (softQCD && iBin == 0 && info.isNonDiffractive()
         && pTHat > binEdges[iBin+1]) return;
-
-        eventCount++;
 
         hardPt->Fill(pTHat);
 
