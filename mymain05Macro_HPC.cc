@@ -65,6 +65,12 @@ void mymain05Macro_HPC() {
         legend->AddEntry(muonPt[iCont],(contrib[iCont]).c_str(),"p");
     }
     legend->Draw("SAME");
+
+    auto labelCuts = new TLatex();
+    labelCuts->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV");
+    labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta < 4");
+    labelCuts->Draw("SAME");
+
     canvasPt->Write();
 
     delete outFile;
