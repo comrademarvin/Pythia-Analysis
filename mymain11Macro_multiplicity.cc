@@ -8,25 +8,22 @@
 #include <TNtuple.h>
 
 void mymain11Macro_multiplicity() {
-    // const Int_t multBinCount = 5;
-    // Double_t multBins[multBinCount+1] = {1, 10, 20, 30, 40, 50};
+    // estimate multiplicity in different regions
+    const int nRegions = 3;
+    const int selectedRegion = 0; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7};
+    const float region_plot_max[nRegions] = {120.0, 60.0, 100.00};
+    const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
-    // const Int_t multBinCount = 7;
-    // Double_t multBins[multBinCount+1] = {1, 5, 10, 15, 20, 25, 30, 35};
-
-    // // central mult bins
-    // const Int_t multBinCount = 7;
-    // Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
-    // const float multRawMax = 120.00;
-
-    // forward mult bins
+    // multiplicity analysis bins
     const Int_t multBinCount = 7;
-    Double_t multBins[multBinCount+1] = {0, 3, 6, 9, 12, 15, 18, 21};
-    const float multRawMax = 60.00;
-
-    const Int_t pTBinCount = 60;
-    const float pTBinMin = 30.0;
-    const float pTBinMax = 60.0;
+    Double_t multBins[nRegions][multBinCount+1] = {
+        {0, 4, 8, 12, 16, 20, 24, 28},
+        {0, 3, 6, 9, 12, 15, 18, 21},
+        {0, 4, 8, 12, 16, 20, 24, 28}
+    };
 
     Double_t multBinsAverage[multBinCount+1];
 
@@ -36,9 +33,9 @@ void mymain11Macro_multiplicity() {
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
 
     // normalise charged particle multiplicity by the average
-    float mb_mult_average = mb_mult_raw->GetMean()/2; // use mult average before binning
+    float mb_mult_average = mb_mult_raw->GetMean()/region_eta_width; // use mult average before binning
     for (int iMultBin = 0; iMultBin < multBinCount+1; iMultBin++) {
-        multBinsAverage[iMultBin] = multBins[iMultBin]/mb_mult_average;
+        multBinsAverage[iMultBin] = multBins[selectedRegion][iMultBin]/mb_mult_average;
     } 
 
     // Access W+/- showered data
@@ -47,8 +44,8 @@ void mymain11Macro_multiplicity() {
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 40, 0, 80);
     TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
-    TH1D* W_muon_mult_raw = new TH1D("W_muon_mult_raw", "Primary charged particle dependence;N_{ch};#sigma_{W->#mu} (mb)", 60, 0, multRawMax);
-    TH1D* W_muon_multiplicity = new TH1D("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins);
+    TH1D* W_muon_mult_raw = new TH1D("W_muon_mult_raw", "Primary charged particle dependence;N_{ch};#sigma_{W->#mu} (mb)", 60, 0, region_plot_max[selectedRegion]);
+    TH1D* W_muon_multiplicity = new TH1D("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", multBinCount, multBins[selectedRegion]);
     TH1D* W_muon_yield_mult = new TH1D("W_muon_yield_mult", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1}/<dN_{ch}/d#eta>;#frac{d^{2}N}{dp_{T}dy}", multBinCount, multBinsAverage);
 
     vector<TH1D*> W_muon_pt_mult_binned(multBinCount);
@@ -80,7 +77,7 @@ void mymain11Macro_multiplicity() {
         W_muon_pt_y->Fill(pt, rapidity);
         int muon_event_mult = (*event_mult)[static_cast<int>(eventIndex)];
         W_muon_mult_raw->Fill(muon_event_mult);
-        W_muon_multiplicity->Fill(muon_event_mult/2);
+        W_muon_multiplicity->Fill(muon_event_mult/region_eta_width);
 
         // kinematics
         if ((rapidity >= 2.5) && (rapidity <= 4) && (abs(pAbs) > 4)) {
@@ -89,7 +86,7 @@ void mymain11Macro_multiplicity() {
 
         // multiplicity
         if ((rapidity >= 2.5) && (rapidity <= 4) && (pt >= pTBinMin) && (pt <= pTBinMax) && (abs(pAbs) > 4)) {
-            double event_mult_average_norm = muon_event_mult/(2*mb_mult_average);
+            double event_mult_average_norm = muon_event_mult/(region_eta_width*mb_mult_average);
             W_muon_yield_mult->Fill(event_mult_average_norm);
             for (int iBin = 0; iBin < multBinCount; iBin++) {
                 if ((event_mult_average_norm >= multBinsAverage[iBin]) && (event_mult_average_norm < multBinsAverage[iBin+1])) {

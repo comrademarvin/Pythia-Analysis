@@ -24,15 +24,15 @@ int main() {
 
     // Store charged particles and event charged particle count for multiplicity analysis
     vector<int> multiplicities(generatedEvents, -1);
-    bool multCentral = false; // either estimate multiplicity in the central or forward region
-    float multEtaMin, multEtaMax;
-    if (multCentral) {
-        multEtaMin = -1.0; // range of SPD in ITS
-        multEtaMax = 1.0;
-    } else {
-        multEtaMin = 2.5; // range of V0 (2.8 < eta < 5.1)
-        multEtaMax = 4.0;
-    }
+    
+    // estimate multiplicity in different regions
+    const int nRegions = 3;
+    const int selectedRegion = 0; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7};
+    const float region_plot_max[nRegions] = {120.0, 60.0, 100.00};
+    const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // Store W mother for physics kinematics
     //TNtuple* WMotherTuple = new TNtuple("W_mother", "W_mother", "eventTag:pAbs:pt:y:eta");
@@ -93,7 +93,7 @@ int main() {
             int particleID = abs(particle->id());
 
             int motherIndex;
-            if (particle->isCharged() && (particle->eta() > multEtaMin) && (particle->eta() < multEtaMax)) {
+            if (particle->isCharged() && (particle->eta() > region_eta_min[selectedRegion]) && (particle->eta() < region_eta_max[selectedRegion])) {
                 // only consider primary charged particles (According to ALICE's definition of primary)
                 double particleLifetime = (particle->tau())/10; // Convert mm/c to cm/c
                 bool isPrimary = true;

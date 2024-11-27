@@ -11,26 +11,16 @@ using namespace Pythia8;
 int main() {
     static const int nBins = 6;
     static const double binEdges[nBins+1] = {0.0, 15.0, 30.0, 50.0, 70.0, 100.0, 150.0};
-    // static const int nBins = 1;
-    // static const double binEdges[nBins+1] = {0.0, 150.0};
 
-    vector<double> binLuminocity(nBins); // luminocity from generated process sigma to calculate cross-sections
-
-    // either estimate multiplicity in the central or forward region
-    bool multCentral = false;
-    float multEtaMin, multEtaMax;
-    if (multCentral) {
-        multEtaMin = -1.0; // range of SPD in ITS
-        multEtaMax = 1.0;
-    } else {
-        multEtaMin = 2.5; // range of V0 (2.8 < eta < 5.1)
-        multEtaMax = 4.0;
-    }
+    // generated process info for cross-section normalisation
+    TNtuple* genInfo = new TNtuple("genInfo", "genInfo", "weightSum:sigmaGen:sigmaErr");
 
     // Histograms
     // Total Cross Section
-    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 150, 0.0, 150.0);
-    TH1F *hardPtPart = new TH1F("hardQCD_part","", 150, 0.0, 150.0);
+    int N_bins_hard_pt = 150;
+    double hard_pt_max = 150.0;
+    TH1F *hardPt = new TH1F("HardQCD:All","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", N_bins_hard_pt, 0.0, hard_pt_max);
+    TH1F *hardPtPart = new TH1F("hardQCD_part","", N_bins_hard_pt, 0.0, hard_pt_max);
 
     // HF Cross Sections
     vector<TNtuple*> chargedTuples(nBins);
@@ -42,7 +32,7 @@ int main() {
     Pythia pythia;
 
     pythia.readString("Beams:eCM = 5360.");
-    pythia.readString("Tune:pp = 14");
+    pythia.readString("Tune:pp = 14"); // Monash Tune
 
     int N_events = 1000000;
 
@@ -79,7 +69,7 @@ int main() {
             // iterate through event record
             for (int i = 0; i < pythia.event.size(); ++i) {
                 auto* particle = &pythia.event[i];
-                if (particle->isCharged() && (particle->eta() > multEtaMin) && (particle->eta() < multEtaMax)) { // in region of interest
+                if (particle->isCharged()) { // in 4pi region
                     // only consider primary charged particles (According to ALICE's definition of primary)
                     double particleLifetime = (particle->tau())/10; // Convert mm/c to cm/c
                     bool isPrimary = true;
@@ -115,14 +105,21 @@ int main() {
 
         }
 
-        double integrated_luminocity = Event_count/(pythia.info.sigmaGen());
-        binLuminocity[iBin] = integrated_luminocity;
+        // generated cross-section info for the bin
+        genInfo->Fill(pythia.info.weightSum(), pythia.info.sigmaGen(), pythia.info.sigmaErr());
 
-        hardPtPart->Scale(1/integrated_luminocity, "width");
+        // normalise pT-hat for the bin
+        hardPtPart->Scale(1/(pythia.info.weightSum()), "width");
+        TH1F *sigmaGenHist = new TH1F("hard_QCD_sigma_gen","", N_bins_hard_pt, 0.0, hard_pt_max);
+        for (int iBin = 0; iBin < N_bins_hard_pt; iBin++) {
+            sigmaGenHist->SetBinContent(iBin, pythia.info.sigmaGen());
+            sigmaGenHist->SetBinError(iBin, pythia.info.sigmaErr());
+        }
+        hardPtPart->Multiply(sigmaGenHist);
         hardPt->Add(hardPtPart);
     }
 
-    TFile* outFile = new TFile("mymain01_1M_536_forward.root", "RECREATE");
+    TFile* outFile = new TFile("mymain01_1M_536_4pi.root", "RECREATE");
 
     hardPt->Write();
 
@@ -131,7 +128,7 @@ int main() {
         chargedTuples[iBin]->Write(Form("charged%d", iBin));
     }
 
-    outFile->WriteObject(&binLuminocity, "luminocity");
+    genInfo->Write();
 
     delete outFile;
 
