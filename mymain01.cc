@@ -34,6 +34,9 @@ int main() {
     pythia.readString("Beams:eCM = 5360.");
     pythia.readString("Tune:pp = 14"); // Monash Tune
 
+    // colour reconnection
+    pythia.readString("ColourReconnection:reconnect = off");
+
     int N_events = 1000000;
 
     for (int iBin = 0; iBin < nBins; ++iBin) {
@@ -119,7 +122,7 @@ int main() {
         hardPt->Add(hardPtPart);
     }
 
-    TFile* outFile = new TFile("mymain01_1M_536_4pi.root", "RECREATE");
+    TFile* outFile = new TFile("mymain01_1M_536_4pi_CR_off.root", "RECREATE");
 
     hardPt->Write();
 

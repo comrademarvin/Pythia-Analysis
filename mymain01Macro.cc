@@ -11,34 +11,39 @@ void mymain01Macro() {
 
     // estimate multiplicity in different regions
     const int nRegions = 3;
-    const int selectedRegion = 2; // select the desired multiplicity estimation region here
+    const int selectedRegion = 0; // select the desired multiplicity estimation region here
     const string region_label[nRegions] = {"central", "forward", "V0C"};
     const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7};
     const float region_eta_max[nRegions] = {1.0, 4.0, 3.7};
-    const float region_plot_max[nRegions] = {120.0, 60.0, 100.00};
+    const float region_plot_max[nRegions] = {100.0, 60.0, 100.00};
+    const int region_plot_bins[nRegions] = {50, 30, 50};
     const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // multiplicity analysis bins
-    const Int_t multBinCount = 7;
+    const Int_t multBinCount = 6;
     Double_t multBins[nRegions][multBinCount+1] = {
-        {0, 4, 8, 12, 16, 20, 24, 28},
-        {0, 3, 6, 9, 12, 15, 18, 21},
-        {0, 4, 8, 12, 16, 20, 24, 28}
+        {0, 5, 10, 15, 20, 25, 30},
+        {0, 3, 6, 9, 12, 15, 18},
+        {0, 4, 8, 12, 16, 20, 24}
     };
 
     // pThat multiplicity
     // histogram for input for multiplicity analysis
-    TH1D* multiplicity_events = new TH1D("multiplicity_events", "Integrated Primary Charged Particle Multiplicity Dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", multBinCount, multBins[selectedRegion]);
+    TH1D* multiplicity_events = new TH1D("multiplicity_events", "Integrated Primary Charged Particle Multiplicity Dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", 
+                                            multBinCount, multBins[selectedRegion]);
     TH1D* multiplicity_events_part = new TH1D("multiplicity_events_part", "", multBinCount, multBins[selectedRegion]);
 
     // histograms for output/comparison
-    TH1D* multiplicity_events_raw = new TH1D("multiplicity_events_raw", "Primary Charged Particle Multiplicity Dependence;N_{ch};#sigma (mb)", 60, 0, region_plot_max[selectedRegion]);
-    TH1D* multiplicity_events_raw_part = new TH1D("multiplicity_events_raw_part", "", 60, 0, region_plot_max[selectedRegion]);
+    TH1D* multiplicity_events_raw = new TH1D("multiplicity_events_raw", "Primary Charged Particle Multiplicity Dependence;N_{ch};#sigma (mb)", 
+                                                region_plot_bins[selectedRegion], 0, region_plot_max[selectedRegion]);
+    TH1D* multiplicity_events_raw_part = new TH1D("multiplicity_events_raw_part", "", region_plot_bins[selectedRegion], 0, region_plot_max[selectedRegion]);
 
-    TH1D* multiplicity_events_raw_norm = new TH1D("multiplicity_events_raw_norm", "Primary Charged Particle Multiplicity Dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", 30, 0, region_plot_max[selectedRegion]/region_eta_width);
-    TH1D* multiplicity_events_raw_norm_part = new TH1D("multiplicity_events_raw_norm_part", "", 30, 0, region_plot_max[selectedRegion]/region_eta_width);
+    TH1D* multiplicity_events_raw_norm = new TH1D("multiplicity_events_raw_norm", "Primary Charged Particle Multiplicity Dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma (mb)", 
+                                                    region_plot_bins[selectedRegion]/2, 0, region_plot_max[selectedRegion]/region_eta_width);
+    TH1D* multiplicity_events_raw_norm_part = new TH1D("multiplicity_events_raw_norm_part", "", 
+                                                        region_plot_bins[selectedRegion]/2, 0, region_plot_max[selectedRegion]/region_eta_width);
 
-    TFile *infile = TFile::Open("mymain01_100k_536_4pi.root", "READ");
+    TFile *infile = TFile::Open("mymain01_10k_536_4pi_CR_off.root", "READ");
 
     TNtuple *genInfo = (TNtuple*)infile->Get("genInfo");
 
@@ -106,7 +111,7 @@ void mymain01Macro() {
     std::cout << "<dN_ch/d_eta> rebinned for input: " << multiplicity_events->GetMean() << std::endl;
 
     // Output file
-    TFile* outFile = new TFile("mymain01Macro.root", "RECREATE");
+    TFile* outFile = new TFile("mymain01Macro_central_CR_off.root", "RECREATE");
 
     multiplicity_events->Draw();
     multiplicity_events->Write();
@@ -116,7 +121,7 @@ void mymain01Macro() {
     TCanvas *canvasMultRaw = new TCanvas("mult_raw","mult_raw");
     gPad->SetLogy();
     //mb_mult_raw->GetYaxis()->SetTitle("#frac{d#sigma}{dN_{ch}} (mb)");
-    multiplicity_events_raw->SetMinimum(0.0000001);
+    multiplicity_events_raw->SetMinimum(0.000001);
     //mb_mult_raw->SetStats(0);
     //multiplicity_events_raw->SetLineColor(2);
     // multiplicity_events_raw->SetMarkerStyle(25);
@@ -127,7 +132,7 @@ void mymain01Macro() {
     TCanvas *canvasMultRawNorm = new TCanvas("mult_raw_norm","mult_raw_norm");
     gPad->SetLogy();
     //mb_mult_raw->GetYaxis()->SetTitle("#frac{d#sigma}{dN_{ch}} (mb)");
-    multiplicity_events_raw_norm->SetMinimum(0.0000001);
+    multiplicity_events_raw_norm->SetMinimum(0.000001);
     //mb_mult_raw->SetStats(0);
     //multiplicity_events_raw_norm->SetLineColor(0);
     // multiplicity_events_raw_norm->SetMarkerStyle(25);

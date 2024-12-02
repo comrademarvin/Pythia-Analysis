@@ -13,7 +13,7 @@ int main() {
     int generatedEvents = 10000000;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain11_W+_10M_forward.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11_W-_10M_central_CR_off.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
@@ -31,15 +31,13 @@ int main() {
     const string region_label[nRegions] = {"central", "forward", "V0C"};
     const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7};
     const float region_eta_max[nRegions] = {1.0, 4.0, 3.7};
-    const float region_plot_max[nRegions] = {120.0, 60.0, 100.00};
-    const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // Store W mother for physics kinematics
     //TNtuple* WMotherTuple = new TNtuple("W_mother", "W_mother", "eventTag:pAbs:pt:y:eta");
 
     // read events from POWHEG lhe output
     pythia.readString("Beams:frameType = 4");
-    pythia.readString("Beams:LHEF = pwgevents_W+_10M_536.lhe");
+    pythia.readString("Beams:LHEF = pwgevents_W-_10M_536.lhe");
     pythia.readString("Tune:pp = 14"); // Monash tune
     //pythia.readString("Parallelism:numThreads = 5");
 
@@ -56,6 +54,9 @@ int main() {
     pythia.readString("POWHEG:pThard = 0");
     pythia.readString("POWHEG:vetoCount = 3");
     pythia.readString("POWHEG:MPIveto = 0");
+
+    // colour reconnection
+    pythia.readString("ColourReconnection:reconnect = off");
 
     // Add in user hooks for shower vetoing.
     shared_ptr<PowhegHooks> powhegHooks;
