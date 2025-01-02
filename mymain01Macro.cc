@@ -26,7 +26,7 @@ void mymain01Macro() {
         {0, 4, 8, 12, 16, 20, 24, 32},
         {0, 4, 8, 12, 16, 20, 24, 32},
         {0, 5, 10, 15, 20, 25, 30, 35},
-        {0, 4, 8, 12, 16, 20, 24, 28}
+        {0, 3, 6, 9, 12, 15, 18, 21}
     };
 
     // pThat multiplicity
@@ -45,7 +45,7 @@ void mymain01Macro() {
     TH1D* multiplicity_events_raw_norm_part = new TH1D("multiplicity_events_raw_norm_part", "", 
                                                         region_plot_bins[selectedRegion]/2, 0, region_plot_max[selectedRegion]/region_eta_width);
 
-    TFile *infile = TFile::Open("mymain01_10k_536_4pi_MPI_off.root", "READ");
+    TFile *infile = TFile::Open("mymain01_1M_536_4pi_MPI_off.root", "READ");
 
     TNtuple *genInfo = (TNtuple*)infile->Get("genInfo");
 

@@ -36,7 +36,7 @@ void mymain11Macro_multiplicity() {
     TFile* infile_mb = TFile::Open("mymain01Macro_central_CR_off.root", "READ");
     TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
-    TH1D* mb_mult_raw_norm = (TH1D*) infile_mb->Get("mult_raw_norm");
+    //TH1D* mb_mult_raw_norm = (TH1D*) infile_mb->Get("mult_raw_norm");
 
     // normalise charged particle multiplicity by the average
     float mb_mult_average = mb_mult_raw->GetMean()/region_eta_width; // use mult average before re-binning

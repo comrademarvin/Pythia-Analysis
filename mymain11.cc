@@ -13,7 +13,7 @@ int main() {
     int generatedEvents = 10000000;
 
     // ROOT file for histograms
-    TFile* outFile = new TFile("mymain11_W-_10M_central_CR_off.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11_W-_10M_central_MPI_off.root", "RECREATE");
 
     // Total Cross Section
     TH1F *hardPt = new TH1F("SigmaGen","Process Total Cross-Section;#hat{p}_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", 100, 0.0, 100.0);
@@ -26,11 +26,11 @@ int main() {
     vector<int> multiplicities(generatedEvents, -1);
     
     // estimate multiplicity in different regions
-    const int nRegions = 3;
-    const int selectedRegion = 0; // select the desired multiplicity estimation region here
-    const string region_label[nRegions] = {"central", "forward", "V0C"};
-    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7};
-    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7};
+    const int nRegions = 5;
+    const int selectedRegion = 4; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0};
 
     // Store W mother for physics kinematics
     //TNtuple* WMotherTuple = new TNtuple("W_mother", "W_mother", "eventTag:pAbs:pt:y:eta");
@@ -55,8 +55,11 @@ int main() {
     pythia.readString("POWHEG:vetoCount = 3");
     pythia.readString("POWHEG:MPIveto = 0");
 
+    // MPI
+    pythia.readString("PartonLevel:MPI = off");
+
     // colour reconnection
-    pythia.readString("ColourReconnection:reconnect = off");
+    //pythia.readString("ColourReconnection:reconnect = off");
 
     // Add in user hooks for shower vetoing.
     shared_ptr<PowhegHooks> powhegHooks;
