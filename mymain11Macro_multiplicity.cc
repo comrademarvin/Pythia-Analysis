@@ -9,21 +9,22 @@
 
 void mymain11Macro_multiplicity() {
     // estimate multiplicity in different regions
-    const int nRegions = 3;
-    const int selectedRegion = 0; // select the desired multiplicity estimation region here
-    const string region_label[nRegions] = {"central", "forward", "V0C"};
-    const double region_eta_min[nRegions] = {-1.0, 2.5, 1.7};
-    const double region_eta_max[nRegions] = {1.0, 4.0, 3.7};
-    const double region_plot_max[nRegions] = {100.0, 60.0, 100.00};
-    const int region_plot_bins[nRegions] = {50, 30, 50};
-    const double region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
+    const int nRegions = 4;
+    const int selectedRegion = 3; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0};
+    const float region_plot_max[nRegions] = {100.0, 60.0, 100.00, 120.0};
+    const int region_plot_bins[nRegions] = {50, 30, 50, 60};
+    const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // multiplicity analysis bins
-    const Int_t multBinCount = 6;
+    const Int_t multBinCount = 7;
     Double_t multBins[nRegions][multBinCount+1] = {
-        {0, 5, 10, 15, 20, 25, 30},
-        {0, 3, 6, 9, 12, 15, 18},
-        {0, 4, 8, 12, 16, 20, 24}
+        {0, 4, 8, 12, 16, 20, 24, 28},
+        {0, 4, 8, 12, 16, 20, 24, 32},
+        {0, 4, 8, 12, 16, 20, 24, 32},
+        {0, 5, 10, 15, 20, 25, 30, 35}
     };
 
     // pT-bins for mult dependence
@@ -32,7 +33,7 @@ void mymain11Macro_multiplicity() {
     const float pTBinMax = 60.0;
 
     // Access Minimum Bias data
-    TFile* infile_mb = TFile::Open("mymain01Macro_central.root", "READ");
+    TFile* infile_mb = TFile::Open("mymain01Macro_central_CR_off.root", "READ");
     TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
     TH1D* mb_mult_raw_norm = (TH1D*) infile_mb->Get("mult_raw_norm");
@@ -45,7 +46,7 @@ void mymain11Macro_multiplicity() {
     } 
 
     // Access W+/- showered data
-    TFile* infile = TFile::Open("mymain11_W+_10M_central.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W-_10M_central_CR_off.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 40, 0, 80);
@@ -108,17 +109,18 @@ void mymain11Macro_multiplicity() {
         }
     };
 
-    // Cross Section Scaling
+    // Cross Section Scaling + cuts normalisation
     W_muon_mult_raw->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_multiplicity->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_pt->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_pt_y->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_yield_mult->Scale((*genInfo)[1]/(*genInfo)[0], "width");
-    W_muon_yield_mult->Scale(1/((4-2.5)*(pTBinMax-pTBinMin))); // normalise by integration width
+    W_muon_yield_mult->Scale(1/(pTBinMax-pTBinMin)); // normalise by integration width
 
     vector<TH1D*> W_muon_pt_mult_binned_cs(multBinCount);
     for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
         W_muon_pt_mult_binned[iMultBin]->Scale((*genInfo)[1]/(*genInfo)[0], "width");
+        W_muon_pt_mult_binned[iMultBin]->Scale(1/(4-2.5)); // normalise by integration width
         W_muon_pt_mult_binned_cs[iMultBin] = new TH1D(*(W_muon_pt_mult_binned[iMultBin]));
     }
 
@@ -138,17 +140,16 @@ void mymain11Macro_multiplicity() {
 
     for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
         double multBinCenter = multBinsAverage[iMultBin] + ((multBinsAverage[iMultBin+1] - multBinsAverage[iMultBin])/2);
-        W_muon_pt_mult_binned[iMultBin]->Scale(1/W_muon_yield_mult->Integral());
+        //W_muon_pt_mult_binned[iMultBin]->Scale(1/((W_muon_yield_mult->Integral())*(multBinsAverage[iMultBin+1] - multBinsAverage[iMultBin])));
+        W_muon_pt_mult_binned[iMultBin]->Scale(1/(W_muon_yield_mult->Integral()));
         for (int iPtBin = 1; iPtBin <= pTBinCount; iPtBin++) {
             double yield_pt_bin = (W_muon_pt_mult_binned[iMultBin])->GetBinContent(iPtBin);
-            double y_norm_factor = (4-2.5); //*((pTBinMax-pTBinMin)/pTBinCount); - already normalise for pT-bins above
-            double yield_pt_bin_norm = yield_pt_bin/y_norm_factor;
-
-            multProfile->Fill(multBinCenter, yield_pt_bin_norm, 1);
+            multProfile->Fill(multBinCenter, yield_pt_bin, 1);
         }
     }
 
     TH1D* W_muon_yield_average = multProfile->ProjectionX("yield_average");
+    W_muon_yield_average->Scale(1, "width");
 
     TH1D* W_muon_norm_yield_mult = new TH1D();
     *W_muon_norm_yield_mult = (*W_muon_yield_mult_mb)/(*W_muon_yield_average); // normalise yield by pt average
@@ -202,7 +203,7 @@ void mymain11Macro_multiplicity() {
         W_muon_pt_mult_binned[iBin]->SetMinimum(0.00001);
         W_muon_pt_mult_binned[iBin]->SetLineColor(iBin+1);
         W_muon_pt_mult_binned[iBin]->Draw("SAME");
-        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%.1f <= N_{ch} < %.1f", multBins[iBin], multBins[iBin+1]),"l");
+        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%.1f <= N_{ch} < %.1f", multBins[selectedRegion][iBin], multBins[selectedRegion][iBin+1]),"l");
     }
     // auto labelCuts = new TLatex();
     // labelCuts->DrawLatex(0.0, 0.0, "2.5 < y < 4");
@@ -239,7 +240,7 @@ void mymain11Macro_multiplicity() {
     delete outFile;
 
     // save histograms to join W+/- analysis
-    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_plus_test.root", "RECREATE");
+    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_minus_central_CR_off.root", "RECREATE");
 
     // kinematics
     W_muon_pt->Write();

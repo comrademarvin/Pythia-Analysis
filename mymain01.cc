@@ -34,8 +34,11 @@ int main() {
     pythia.readString("Beams:eCM = 5360.");
     pythia.readString("Tune:pp = 14"); // Monash Tune
 
+    // MPI
+    pythia.readString("PartonLevel:MPI = off");
+
     // colour reconnection
-    pythia.readString("ColourReconnection:reconnect = off");
+    //pythia.readString("ColourReconnection:reconnect = off");
 
     int N_events = 1000000;
 
@@ -122,7 +125,7 @@ int main() {
         hardPt->Add(hardPtPart);
     }
 
-    TFile* outFile = new TFile("mymain01_1M_536_4pi_CR_off.root", "RECREATE");
+    TFile* outFile = new TFile("mymain01_1M_536_4pi_MPI_off.root", "RECREATE");
 
     hardPt->Write();
 

@@ -4,21 +4,29 @@
 #include "TLatex.h"
 
 void mymain11Macro_join() {
-    // central mult bins
+    // estimate multiplicity in different regions
+    const int nRegions = 4;
+    const int selectedRegion = 0; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0};
+    const float region_plot_max[nRegions] = {100.0, 60.0, 100.00, 120.0};
+    const int region_plot_bins[nRegions] = {50, 30, 50, 60};
+    const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
+
+    // multiplicity analysis bins
     const Int_t multBinCount = 7;
-    Double_t multBins[multBinCount+1] = {0, 4, 8, 12, 16, 20, 24, 28};
-    const float multRawMax = 120.00;
+    Double_t multBins[nRegions][multBinCount+1] = {
+        {0, 4, 8, 12, 16, 20, 24, 28},
+        {0, 4, 8, 12, 16, 20, 24, 32},
+        {0, 4, 8, 12, 16, 20, 24, 32},
+        {0, 5, 10, 15, 20, 25, 30, 35}
+    };
 
-    // // forward mult bins
-    // const Int_t multBinCount = 7;
-    // Double_t multBins[multBinCount+1] = {0, 3, 6, 9, 12, 15, 18, 21};
-    // const float multRawMax = 60.00;
-
+    // pT-bins for mult dependence
     const Int_t pTBinCount = 60;
     const float pTBinMin = 30.0;
     const float pTBinMax = 60.0;
-
-    Double_t multBinsAverage[multBinCount+1];
 
     // Access Minimum Bias data
     TFile* infile_mb = TFile::Open("mymain01Macro_central.root", "READ");
@@ -26,12 +34,13 @@ void mymain11Macro_join() {
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
 
     std::cout << "Mean from mult binned: " << mb_mult->GetMean() << std::endl;
-    std::cout << "Mean from raw binned: " << mb_mult_raw->GetMean()/2 << std::endl;
+    std::cout << "Mean from raw binned: " << mb_mult_raw->GetMean()/region_eta_width << std::endl;
 
     // normalise charged particle multiplicity by the average
-    float mb_mult_average = mb_mult_raw->GetMean()/2;
+    float mb_mult_average = mb_mult_raw->GetMean()/region_eta_width;
+    Double_t multBinsAverage[multBinCount+1];
     for (int iMultBin = 0; iMultBin < multBinCount+1; iMultBin++) {
-        multBinsAverage[iMultBin] = multBins[iMultBin]/mb_mult_average;
+        multBinsAverage[iMultBin] = multBins[selectedRegion][iMultBin]/mb_mult_average;
     }
 
     // W+/- output files from mymain11Macro_multiplicity
@@ -93,11 +102,12 @@ void mymain11Macro_join() {
         double multBinCenter = multBinsAverage[iMultBin] + ((multBinsAverage[iMultBin+1] - multBinsAverage[iMultBin])/2);
         for (int iPtBin = 1; iPtBin <= pTBinCount; iPtBin++) {
             double yield_pt_bin = (W_muon_pt_mult_binned[iMultBin])->GetBinContent(iPtBin);
-            multProfile->Fill(multBinCenter, yield_pt_bin/(4-2.5), 1);
+            multProfile->Fill(multBinCenter, yield_pt_bin, 1);
         }
     }
 
     TH1D* W_muon_yield_average = multProfile->ProjectionX("yield_average");
+    W_muon_yield_average->Scale(1, "width");
 
     TH1D* W_muon_norm_yield_mult = new TH1D();
     *W_muon_norm_yield_mult = (*W_muon_yield_mult_mb)/(*W_muon_yield_average); // normalise yield by pt average
@@ -194,7 +204,7 @@ void mymain11Macro_join() {
         W_muon_pt_mult_binned[iBin]->SetMarkerStyle(lineMarkers[iBin]);
         W_muon_pt_mult_binned[iBin]->SetMarkerColor(lineColors[iBin]);
         W_muon_pt_mult_binned[iBin]->Draw("SAME");
-        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%d <= dN_{ch}/d#eta < %d", (int)multBins[iBin], (int)multBins[iBin+1]),"p");
+        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%.1f <= N_{ch} < %.1f", multBins[selectedRegion][iBin], multBins[selectedRegion][iBin+1]),"p");
     }
     legendPtBins->Draw("SAME");
     canvasMuonPtBins->Write();
