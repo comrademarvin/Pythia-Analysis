@@ -5,22 +5,23 @@
 
 void mymain11Macro_join() {
     // estimate multiplicity in different regions
-    const int nRegions = 4;
-    const int selectedRegion = 0; // select the desired multiplicity estimation region here
-    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off"};
-    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0};
-    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0};
-    const float region_plot_max[nRegions] = {100.0, 60.0, 100.00, 120.0};
-    const int region_plot_bins[nRegions] = {50, 30, 50, 60};
+    const int nRegions = 5;
+    const int selectedRegion = 1; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0};
+    const float region_plot_max[nRegions] = {100.0, 60.0, 100.00, 120.0, 60.0};
+    const int region_plot_bins[nRegions] = {50, 30, 50, 60, 30};
     const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // multiplicity analysis bins
     const Int_t multBinCount = 7;
     Double_t multBins[nRegions][multBinCount+1] = {
         {0, 4, 8, 12, 16, 20, 24, 28},
+        {0, 4, 8, 12, 16, 20, 24, 28},
         {0, 4, 8, 12, 16, 20, 24, 32},
-        {0, 4, 8, 12, 16, 20, 24, 32},
-        {0, 5, 10, 15, 20, 25, 30, 35}
+        {0, 5, 10, 15, 20, 25, 30, 35},
+        {0, 2, 4, 6, 8, 10, 12, 14}
     };
 
     // pT-bins for mult dependence
@@ -29,7 +30,7 @@ void mymain11Macro_join() {
     const float pTBinMax = 60.0;
 
     // Access Minimum Bias data
-    TFile* infile_mb = TFile::Open("mymain01Macro_central.root", "READ");
+    TFile* infile_mb = TFile::Open("mymain01Macro_forward.root", "READ");
     TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
 
@@ -44,8 +45,8 @@ void mymain11Macro_join() {
     }
 
     // W+/- output files from mymain11Macro_multiplicity
-    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus_central.root", "READ");
-    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus_central.root", "READ");
+    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus_forward.root", "READ");
+    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus_forward.root", "READ");
 
     // kinematics
     TH1F* W_muon_pt_plus = (TH1F*)infile_W_plus->Get("W_muon_pt");
@@ -113,7 +114,7 @@ void mymain11Macro_join() {
     *W_muon_norm_yield_mult = (*W_muon_yield_mult_mb)/(*W_muon_yield_average); // normalise yield by pt average
 
     // plotting
-    TFile* outFile = new TFile("mymain11Hist_joined_central.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11Hist_joined_forward.root", "RECREATE");
 
     // kinematics
     TCanvas *canvasMuonPt = new TCanvas("W_muon_pt","W_muon_pt");
