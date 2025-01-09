@@ -15,8 +15,8 @@ void mymain01Macro() {
     const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off"};
     const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0};
     const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0};
-    const float region_plot_max[nRegions] = {100.0, 60.0, 80.00, 120.0, 60.0};
-    const int region_plot_bins[nRegions] = {50, 30, 40, 60, 30};
+    const float region_plot_max[nRegions] = {100.0, 70.0, 90.00, 120.0, 60.0};
+    const int region_plot_bins[nRegions] = {50, 35, 45, 60, 30};
     const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // multiplicity analysis bins

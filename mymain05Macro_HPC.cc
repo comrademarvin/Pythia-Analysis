@@ -25,7 +25,7 @@ void mymain05Macro_HPC() {
 
     // read in root output per pT-hat bin
     for(int iBin = 0; iBin < nBins; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain05_HPC_root_20M_536/mymain05_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("mymain05_HPC_root_1M_536/mymain05_%d.root", iBin), "READ");
 
         std::vector<double> *genInfoNorm;
         infile->GetObject("genInfoNorm", genInfoNorm);
@@ -51,16 +51,21 @@ void mymain05Macro_HPC() {
     TFile* outFile = new TFile("mymain05Macro_HPC.root", "RECREATE");
 
     // plotting
-    int lineColours[N_cont] = {1,2,3,4,6,7,8,9};
+    int lineColours[N_cont] = {1,2,3,4,6,28,8,9};
+    int markerStyles[N_cont] = {20,21,22,23,29,33,34,47};
     TCanvas *canvasPt = new TCanvas("muon_pt","muon_pt");
     gPad->SetLogy();
     auto legend = new TLegend();
     for (int iCont = 0; iCont < N_cont; iCont++) {
-        muonPt[iCont]->SetMinimum(0.000000001);
+        muonPt[iCont]->GetYaxis()->SetTitle("#frac{d#sigma_{X#rightarrow#mu}}{dp_{T}} (mb/GeV/c)");
+        muonPt[iCont]->SetMaximum(0);
+        muonPt[iCont]->SetMinimum(0.0000000001);
         muonPt[iCont]->SetStats(0);
         muonPt[iCont]->SetLineColor(lineColours[iCont]);
-        muonPt[iCont]->SetMarkerStyle(20+iCont);
+        muonPt[iCont]->SetLineWidth(3);
+        muonPt[iCont]->SetMarkerStyle(markerStyles[iCont]);
         muonPt[iCont]->SetMarkerColor(lineColours[iCont]);
+        muonPt[iCont]->SetMarkerSize(1.7);
         muonPt[iCont]->Draw("SAME");
         legend->AddEntry(muonPt[iCont],(contrib[iCont]).c_str(),"p");
     }
@@ -68,7 +73,8 @@ void mymain05Macro_HPC() {
 
     auto labelCuts = new TLatex();
     labelCuts->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV");
-    labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta < 4");
+    labelCuts->DrawLatex(0.0, 0.0, "Monash Tune, Minimum Bias (QCD)");
+    labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4");
     labelCuts->Draw("SAME");
 
     canvasPt->Write();

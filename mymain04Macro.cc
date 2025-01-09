@@ -29,7 +29,7 @@ void mymain04Macro() {
     // normalising to cross-section
     hardQCDpTHat->Scale(1/((*genInfoHard)[0]), "width"); // normalise by pythia weightSum and bin width
     TH1F *hardQCDsigmaGen = new TH1F("hard_QCD_sigma_gen","", nBins, 0, 20);
-    for (int iBin = 0; iBin < nBins; iBin++) {
+    for (int iBin = 1; iBin <= nBins; iBin++) {
         hardQCDsigmaGen->SetBinContent(iBin, (*genInfoHard)[1]);
         hardQCDsigmaGen->SetBinError(iBin, (*genInfoHard)[2]);
     }
@@ -37,7 +37,7 @@ void mymain04Macro() {
 
     softQCDpTHat->Scale(1/((*genInfoSoft)[0]), "width"); // normalise by pythia weightSum and bin width
     TH1F *softQCDsigmaGen = new TH1F("soft_QCD_sigma_gen","", nBins, 0, 20);
-    for (int iBin = 0; iBin < nBins; iBin++) {
+    for (int iBin = 1; iBin <= nBins; iBin++) {
         softQCDsigmaGen->SetBinContent(iBin, (*genInfoSoft)[1]);
         softQCDsigmaGen->SetBinError(iBin, (*genInfoSoft)[2]);
     }
@@ -49,20 +49,28 @@ void mymain04Macro() {
     hardQCDsigmaGen->Write();
 
     TCanvas *canvasPtHat = new TCanvas("pT_hat_contributions","pT_hat_contributions"); // contributions from soft/hard QCD to pT-hat
-    hardQCDpTHat->SetLineColor(1);
+    gPad->SetLogy();
+
+    hardQCDpTHat->SetMinimum(0.01);
     hardQCDpTHat->SetStats(0);
+    hardQCDpTHat->SetLineColor(1);
+    hardQCDpTHat->SetLineWidth(3);
     hardQCDpTHat->SetMarkerStyle(20);
     hardQCDpTHat->SetMarkerColor(1);
-    hardQCDpTHat->SetMinimum(0.01);
+    hardQCDpTHat->SetMarkerSize(1.5);
     hardQCDpTHat->Draw("SAME");
-    softQCDpTHat->SetLineColor(2);
+
     softQCDpTHat->SetStats(0);
-    softQCDpTHat->SetMarkerStyle(20);
+    softQCDpTHat->SetLineColor(2);
+    softQCDpTHat->SetLineWidth(3);
+    softQCDpTHat->SetMarkerStyle(21);
     softQCDpTHat->SetMarkerColor(2);
+    softQCDpTHat->SetMarkerSize(1.5);
     softQCDpTHat->Draw("SAME");
+
     auto legend = new TLegend();
-    legend->AddEntry(hardQCDpTHat,"HardQCD:all","l");
-    legend->AddEntry(softQCDpTHat,"SoftQCD:nonDiffractive","l");
+    legend->AddEntry(hardQCDpTHat,"HardQCD:all","p");
+    legend->AddEntry(softQCDpTHat,"SoftQCD:nonDiffractive","p");
     legend->Draw("SAME");
     canvasPtHat->Write();
 

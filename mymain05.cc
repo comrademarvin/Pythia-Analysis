@@ -11,10 +11,10 @@ using namespace Pythia8;
 
 int main() {
     // ROOT output file
-    TFile* outFile = new TFile("mymain05_2M.root", "RECREATE");
+    TFile* outFile = new TFile("mymain05_1M.root", "RECREATE");
 
     // Number of events to generate per bin.
-    int N_events = 2000000;
+    int N_events = 1000000;
 
     // Turn SoftQCD on/off
     bool softQCD = true;
@@ -115,7 +115,7 @@ int main() {
         // normalise pT-hat for the bin
         hardPtPart->Scale(1/(pythia.info.weightSum()), "width");
         TH1F *sigmaGenHist = new TH1F("hard_QCD_sigma_gen","", N_bins_hard_pt, 0.0, 200.0);
-        for (int iBin = 0; iBin < N_bins_hard_pt; iBin++) {
+        for (int iBin = 1; iBin <= N_bins_hard_pt; iBin++) {
             sigmaGenHist->SetBinContent(iBin, pythia.info.sigmaGen());
             sigmaGenHist->SetBinError(iBin, pythia.info.sigmaErr());
         }

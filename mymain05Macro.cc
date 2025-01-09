@@ -47,7 +47,7 @@ void mymain05Macro() {
 
         // normalise to cross-section
         TH1F *sigmaGenHistPt = new TH1F("sigma_gen_pt","", N_bins_muon_pt, lowerPt, upperPt);
-        for (int iBin = 0; iBin < N_bins_muon_pt; iBin++) {
+        for (int iBin = 1; iBin <= N_bins_muon_pt; iBin++) {
             sigmaGenHistPt->SetBinContent(iBin, sigmaGen);
             sigmaGenHistPt->SetBinError(iBin, sigmaErr);
         }
@@ -79,10 +79,22 @@ void mymain05Macro() {
     TH1F* total_cs_pt_hat = (TH1F*)infile->Get("pT_hat");
     TCanvas *canvasPtHat = new TCanvas("total_cs_pt_hat","total_cs_pt_hat");
     gPad->SetLogy();
-    total_cs_pt_hat->SetMaximum(10);
+
+    total_cs_pt_hat->SetMaximum(100);
     total_cs_pt_hat->SetMinimum(0.0000001);
     total_cs_pt_hat->SetStats(0);
-    total_cs_pt_hat->Draw();
+    total_cs_pt_hat->SetLineColor(3);
+    total_cs_pt_hat->SetLineWidth(3);
+    total_cs_pt_hat->SetMarkerStyle(20);
+    total_cs_pt_hat->SetMarkerColor(3);
+    total_cs_pt_hat->SetMarkerSize(1.3);
+    total_cs_pt_hat->Draw("SAME");
+
+    auto labelPtHat = new TLatex();
+    labelPtHat->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV, Monash Tune");
+    labelPtHat->DrawLatex(0.0, 0.0, "Minimum Bias (QCD)");
+    labelPtHat->Draw("SAME");
+
     canvasPtHat->Write();
 
     delete outFile;
