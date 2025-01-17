@@ -14,13 +14,13 @@ void mymain09Macro_HPC_compare_forced() {
     Double_t edges_pub[NBINS_PUB + 1] = {2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13, 14, 15, 16.5, 18, 20};
 
     // different binning for comparison with data and W->mu cross-section
-    TH1F *muonPt = new TH1F("muon_pt","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", 40, 0, 80);
-    TH1F *muonPtCompare = new TH1F("muon_pt_compare","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b->#mu}}{dp_{T}} (pb/GeV/c)", NBINS_PUB, edges_pub);
+    TH1F *muonPt = new TH1F("muon_pt","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b#rightarrow#mu}}{dp_{T}} (pb/GeV/c)", 40, 0, 80);
+    TH1F *muonPtCompare = new TH1F("muon_pt_compare","HF Muon Decay Cross-Section;p_{T} (GeV/c);#frac{d#sigma_{c,b#rightarrow#mu}}{dp_{T}} (pb/GeV/c)", NBINS_PUB, edges_pub);
 
     vector<TH1F*> muonPtContribs(nBins);
 
     for(int iBin = 0; iBin < nBins; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_502_tune5/mymain09_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_502_tune14/mymain09_%d.root", iBin), "READ");
 
         std::vector<double> *genInfoNorm;
         infile->GetObject("genInfoNorm", genInfoNorm);
@@ -81,23 +81,33 @@ void mymain09Macro_HPC_compare_forced() {
     };
 
     // Output file
-    TFile* outFile = new TFile("mymain09Hist_HPC_compare_forced.root", "RECREATE");
+    TFile* outFile = new TFile("mymain09Hist_HPC_compare_forced_20M_502.root", "RECREATE");
 
     // Contribution to HF->mu from each pT-hat bin
-    int lineColours[nBins] = {1,2,3,4,6,7,8};
+    int lineColours[nBins] = {1,2,3,4,6,8,9};
+    int markerStyles[nBins] = {20,21,22,23,29,33,34};
     TCanvas *canvasMuonPtContrib = new TCanvas("Muon_sigma_pt_contrib","Muon_sigma_pt_contrib");
     gPad->SetLogy();
     auto legendContrib = new TLegend();
     for(int iBin = 0; iBin < nBins; iBin++) {
-        muonPtContribs[iBin]->SetMinimum(0.01);
+        muonPtContribs[iBin]->SetMaximum(10000000);
+        muonPtContribs[iBin]->SetMinimum(0.001);
         muonPtContribs[iBin]->SetStats(0);
         muonPtContribs[iBin]->SetLineColor(lineColours[iBin]);
-        muonPtContribs[iBin]->SetMarkerStyle(20+iBin);
+        muonPtContribs[iBin]->SetLineWidth(3);
+        muonPtContribs[iBin]->SetMarkerStyle(markerStyles[iBin]);
         muonPtContribs[iBin]->SetMarkerColor(lineColours[iBin]);
+        muonPtContribs[iBin]->SetMarkerSize(1.7);
         muonPtContribs[iBin]->Draw("SAME");
         legendContrib->AddEntry(muonPtContribs[iBin],Form("%.1f <= #hat{p}_{T} < %.1f", pT_hat_binEdges[iBin], pT_hat_binEdges[iBin+1]),"p");
     }
     legendContrib->Draw("SAME");
+
+    auto labelContrib = new TLatex();
+    labelContrib->DrawLatex(0.0, 0.0, "Pythia8 pp #sqrt{s} = 5.02 TeV, Monash Tune");
+    labelContrib->DrawLatex(0.0, 0.0, "2.5 < #eta < 4, 2 < p_{T} < 20");
+    labelContrib->Draw("SAME");
+
     canvasMuonPtContrib->Write();
 
     // Pt yield results
@@ -110,20 +120,25 @@ void mymain09Macro_HPC_compare_forced() {
 
     muonPtCompare->SetStats(0);
     muonPtCompare->SetLineColor(1);
-    muonPtCompare->SetMarkerStyle(33);
+    muonPtCompare->SetLineWidth(3);
+    muonPtCompare->SetMarkerStyle(20);
     muonPtCompare->SetMarkerColor(1);
+    muonPtCompare->SetMarkerSize(1.7);
     muonPtCompare->SetMinimum(100);
     //muonPtCompare->Draw("SAME");
     pub_data_hist->SetStats(0);
     pub_data_hist->SetLineColor(2);
+    pub_data_hist->SetLineWidth(3);
     pub_data_hist->SetMarkerStyle(21);
     pub_data_hist->SetMarkerColor(2);
+    pub_data_hist->SetMarkerSize(1.7);
     pub_data_hist->SetMinimum(100);
     //pub_data_hist->Draw("SAME");
 
     auto rp = new TRatioPlot(muonPtCompare, pub_data_hist);
     rp->SetH1DrawOpt("E");
     rp->Draw();
+    rp->GetLowerRefYaxis()->SetTitle("ratio");
 
     rp->GetUpperPad()->cd();
     // //muonFONLL->Draw("SAME");
@@ -134,9 +149,8 @@ void mymain09Macro_HPC_compare_forced() {
     legendMuon->Draw("SAME");
 
     auto labelCuts = new TLatex();
-    labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.02 TeV, 2.5 < #eta < 4");
-    labelCuts->DrawLatex(0.0, 0.0, "2 < p_{T} < 20");
-    labelCuts->DrawLatex(0.0, 0.0, "|p| > 4");
+    labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.02 TeV");
+    labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta < 4, 2 < p_{T} < 20");
     labelCuts->Draw("SAME");
 
     canvasMuonPtCompare->Write();

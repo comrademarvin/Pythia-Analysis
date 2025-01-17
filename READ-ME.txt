@@ -35,12 +35,12 @@ mymain08:
 
 mymain09:
     Final version of HF->mu cross-section. Generated with pt-hat binning and outputs correct decay status. D/D0 mesons forced to decay into muons.
-    TODO: include multiplicity
+    TODO: include multiplicity analysis
 
     mymain09Macro_compare_forced_decay:
         Final macro to compare HF->mu output from mymain09 to published data.
 
-mymain09_HPC;
+mymain09_HPC:
     Same as mymain09, but adjusted to run each pT-hat bin as a seperate job on the HPC cluster. Also generates events in parallel per bin job.
     Does not account for generated cross-section error - not implemented for pythia parallel.
 

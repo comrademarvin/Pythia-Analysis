@@ -20,9 +20,9 @@ void mymain01Macro_compare() {
     TH1D* mult_raw_V0C = (TH1D*) infile_V0C->Get("multiplicity_events_raw");
 
     // output the <N_ch> for the different systems
-    std::cout << "Central Full Monash: <N_ch> = " << mult_raw_central->GetMean() << std::endl;
-    std::cout << "Central CR off: <N_ch> = " << mult_raw_central_CR->GetMean() << std::endl;
-    std::cout << "Central MPI off: <N_ch> = " << mult_raw_central_MPI->GetMean() << std::endl;
+    std::cout << "Central Full Monash: <N_ch> = " << mult_raw_central->GetMean() << "; sigma = " << mult_raw_central->GetStdDev() << std::endl;
+    std::cout << "Central CR off: <N_ch> = " << mult_raw_central_CR->GetMean() << "; sigma = " << mult_raw_central_CR->GetStdDev() << std::endl;
+    std::cout << "Central MPI off: <N_ch> = " << mult_raw_central_MPI->GetMean() << "; sigma = " << mult_raw_central_MPI->GetStdDev() << std::endl;
     std::cout << "Forward: <N_ch> = " << mult_raw_forward->GetMean() << std::endl;
     std::cout << "V0C: <N_ch> = " << mult_raw_V0C->GetMean() << std::endl;
 

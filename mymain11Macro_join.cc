@@ -10,8 +10,8 @@ void mymain11Macro_join() {
     const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off"};
     const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0};
     const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0};
-    const float region_plot_max[nRegions] = {100.0, 60.0, 100.00, 120.0, 60.0};
-    const int region_plot_bins[nRegions] = {50, 30, 50, 60, 30};
+    const float region_plot_max[nRegions] = {100.0, 70.0, 90.00, 120.0, 60.0};
+    const int region_plot_bins[nRegions] = {50, 35, 45, 60, 30};
     const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // multiplicity analysis bins
@@ -19,7 +19,7 @@ void mymain11Macro_join() {
     Double_t multBins[nRegions][multBinCount+1] = {
         {0, 4, 8, 12, 16, 20, 24, 28},
         {0, 4, 8, 12, 16, 20, 24, 28},
-        {0, 4, 8, 12, 16, 20, 24, 32},
+        {0, 4, 8, 12, 16, 20, 24, 28},
         {0, 5, 10, 15, 20, 25, 30, 35},
         {0, 2, 4, 6, 8, 10, 12, 14}
     };
@@ -97,7 +97,7 @@ void mymain11Macro_join() {
     }
 
     // profile for average per mult bin
-    TProfile* multProfile = new TProfile("mult_prof","Average of W->#mu Yield per Multiplicity bin;dN_{ch}/d#eta_{|#eta|<1}/<dN_{ch}/d#eta>;<#frac{d^{2}N_{W}}{dp_{T}dy}>", multBinCount, multBinsAverage);
+    TProfile* multProfile = new TProfile("mult_prof","Average of W->#mu Yield per Multiplicity bin;dN_{ch}/d#eta/<dN_{ch}/d#eta>;<#frac{d^{2}N_{W}}{dp_{T}dy}>", multBinCount, multBinsAverage);
 
     for (int iMultBin = 0; iMultBin < multBinCount; iMultBin++) {
         double multBinCenter = multBinsAverage[iMultBin] + ((multBinsAverage[iMultBin+1] - multBinsAverage[iMultBin])/2);
@@ -119,54 +119,81 @@ void mymain11Macro_join() {
     // kinematics
     TCanvas *canvasMuonPt = new TCanvas("W_muon_pt","W_muon_pt");
     gPad->SetLogy();
-    W_muon_pt->SetTitle("Vector Boson Muon Decay p_{T}-differential Cross-Section;p_{T} GeV/c;#frac{d#sigma}{dp_{T}} (pb/GeV/c)");
+
+    W_muon_pt->SetTitle("Vector Boson Muon Decay p_{T}-differential Cross-Section;p_{T} GeV/c;#frac{d#sigma_{#mu}}{dp_{T}} (pb/GeV/c)");
+    W_muon_pt->SetMaximum(100);
+    W_muon_pt->SetMinimum(0.01);
     W_muon_pt->SetLineColor(1);
-    W_muon_pt->SetMarkerStyle(4);
+    W_muon_pt->SetLineWidth(3);
+    W_muon_pt->SetMarkerStyle(20);
     W_muon_pt->SetMarkerColor(1);
+    W_muon_pt->SetMarkerSize(1.7);
     W_muon_pt->SetStats(0);
     W_muon_pt->Draw("SAME");
+
     W_muon_pt_plus->SetLineColor(3);
-    W_muon_pt_plus->SetMarkerStyle(26);
+    W_muon_pt_plus->SetLineWidth(3);
+    W_muon_pt_plus->SetMarkerStyle(21);
     W_muon_pt_plus->SetMarkerColor(3);
+    W_muon_pt_plus->SetMarkerSize(1.7);
     W_muon_pt_plus->SetStats(0);
     W_muon_pt_plus->Draw("SAME");
+
     W_muon_pt_minus->SetLineColor(4);
-    W_muon_pt_minus->SetMarkerStyle(27);
+    W_muon_pt_minus->SetLineWidth(3);
+    W_muon_pt_minus->SetMarkerStyle(22);
     W_muon_pt_minus->SetMarkerColor(4);
+    W_muon_pt_minus->SetMarkerSize(1.7);
     W_muon_pt_minus->SetStats(0);
     W_muon_pt_minus->Draw("SAME");
+
     auto legendPt = new TLegend();
     legendPt->AddEntry(W_muon_pt,"W #rightarrow #mu","p");
     legendPt->AddEntry(W_muon_pt_plus,"W^{+} #rightarrow #mu^{+}","p");
     legendPt->AddEntry(W_muon_pt_minus,"W^{-} #rightarrow #mu^{-}","p");
     legendPt->Draw("SAME");
+
     auto labelCuts = new TLatex();
     labelCuts->DrawLatex(0.0, 0.0, "POWHEG pp @ #sqrt{s} = 5.36 TeV");
-    labelCuts->DrawLatex(0.0, 0.0, "2.5 < y < 4");
-    labelCuts->DrawLatex(0.0, 0.0, "|p| > 4");
+    labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4");
     labelCuts->Draw("SAME");
+
     canvasMuonPt->Write();
 
     // multiplicity
     // full cross-section not normalised multiplicity, display bins
     TCanvas *canvasMuonMultRaw = new TCanvas("W_muon_mult_raw","W_muon_mult_raw");
     gPad->SetLogy();
-    mb_mult_raw->GetYaxis()->SetTitle("#frac{d#sigma}{dN_{ch}} (mb)");
+
+    mb_mult_raw->GetYaxis()->SetTitle("#sigma (mb)");
+    mb_mult_raw->SetMaximum(10);
     mb_mult_raw->SetMinimum(0.00000000000001);
     mb_mult_raw->SetStats(0);
     mb_mult_raw->SetLineColor(1);
-    mb_mult_raw->SetMarkerStyle(25);
+    mb_mult_raw->SetLineWidth(3);
+    mb_mult_raw->SetMarkerStyle(20);
     mb_mult_raw->SetMarkerColor(1);
+    mb_mult_raw->SetMarkerSize(1.7);
     mb_mult_raw->Draw("SAME");
+
     W_muon_mult_raw->SetLineColor(3);
-    W_muon_mult_raw->SetMarkerStyle(4);
+    W_muon_mult_raw->SetLineWidth(3);
+    W_muon_mult_raw->SetMarkerStyle(21);
     W_muon_mult_raw->SetMarkerColor(3);
+    W_muon_mult_raw->SetMarkerSize(1.7);
     W_muon_mult_raw->SetStats(0);
     W_muon_mult_raw->Draw("SAME");
+
     auto legendMultRaw = new TLegend();
     legendMultRaw->AddEntry(mb_mult_raw,"Minimum Bias (|#eta| < 1.0)","p");
     legendMultRaw->AddEntry(W_muon_mult_raw,"W #rightarrow #mu","p");
     legendMultRaw->Draw("SAME");
+
+    auto labelMultRaw = new TLatex();
+    labelMultRaw->DrawLatex(0.0, 0.0, "POWHEG+Pythia8 pp @ #sqrt{s} = 5.36 TeV");
+    labelMultRaw->DrawLatex(0.0, 0.0, "Monash Tune (NNPDF2.3 QCD+QED LO)");
+    labelMultRaw->Draw("SAME");
+
     canvasMuonMultRaw->Write();
 
     // full cross-section
@@ -178,36 +205,67 @@ void mymain11Macro_join() {
 
     // cross-section ratio
     TCanvas *canvasMuonRatio = new TCanvas("cs_ratio","cs_ratio");
+
     cs_ratio->GetYaxis()->SetTitle("#sigma_{W#rightarrow#mu}/#sigma_{MB}");
     cs_ratio->SetLineColor(4);
+    cs_ratio->SetLineWidth(3);
     cs_ratio->SetMarkerStyle(8);
     cs_ratio->SetMarkerColor(4);
+    cs_ratio->SetMarkerSize(1.7);
     cs_ratio->Draw("SAME");
+
     // cs_ratio_plus->Draw("SAME");
     // cs_ratio_minus->Draw("SAME");
+
+    auto labelRatio = new TLatex();
+    labelRatio->DrawLatex(0.0, 0.0, "V0C Region (1.7 < #eta_{ch} < 3.7)");
+    labelRatio->Draw("SAME");
+
     canvasMuonRatio->Write();
 
     // minimum bias yield normalised
     TCanvas *canvasMuonYield = new TCanvas("W_muon_yield_mult_mb","W_muon_yield_mult_mb");
+    gPad->SetLogy();
+
+    W_muon_yield_mult_mb->SetTitle("Minimum Bias Scaled W#rightarrow#mu Yield");
+    W_muon_yield_mult_mb->GetYaxis()->SetTitle("#frac{1}{#sigma_{W_{#mu}^{MB}}} #frac{d^{2}#sigma_{W_{#mu}^{MB}}}{dp_{T}d#eta}");
+    W_muon_yield_mult_mb->SetLineColor(3);
+    W_muon_yield_mult_mb->SetLineWidth(3);
+    W_muon_yield_mult_mb->SetMarkerStyle(8);
+    W_muon_yield_mult_mb->SetMarkerColor(3);
+    W_muon_yield_mult_mb->SetMarkerSize(1.7);
+    W_muon_yield_mult_mb->SetStats(0);
     W_muon_yield_mult_mb->Draw("SAME");
+
     canvasMuonYield->Write();
 
     // pt yield mult binned normalised
     TCanvas *canvasMuonPtBins = new TCanvas("W_muon_pt_mult_binned","W_muon_pt_mult_binned");
     gPad->SetLogy();
+
     auto legendPtBins = new TLegend();
-    int lineColors[multBinCount] = {1,2,3,4,6,28,16};
-    int lineMarkers[multBinCount] = {24,25,26,27,28,30,32};
+    int lineColors[multBinCount] = {1,2,3,4,6,8,9};
+    int lineMarkers[multBinCount] = {20,21,22,23,29,33,34};
     for (int iBin = 0; iBin < multBinCount; iBin++) {
+        W_muon_pt_mult_binned[iBin]->GetYaxis()->SetTitle("#frac{1}{#sigma_{W_{#mu}}}#frac{d^{2}#sigma}{dp_{T}d#eta} (1/GeV/c)");
         W_muon_pt_mult_binned[iBin]->SetStats(0);
-        W_muon_pt_mult_binned[iBin]->SetMinimum(0.001);
+        W_muon_pt_mult_binned[iBin]->SetMaximum(1);
+        W_muon_pt_mult_binned[iBin]->SetMinimum(0.0001);
         W_muon_pt_mult_binned[iBin]->SetLineColor(lineColors[iBin]);
+        W_muon_pt_mult_binned[iBin]->SetLineWidth(2);
         W_muon_pt_mult_binned[iBin]->SetMarkerStyle(lineMarkers[iBin]);
         W_muon_pt_mult_binned[iBin]->SetMarkerColor(lineColors[iBin]);
+        W_muon_pt_mult_binned[iBin]->SetMarkerSize(1.5);
         W_muon_pt_mult_binned[iBin]->Draw("SAME");
         legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%.1f <= N_{ch} < %.1f", multBins[selectedRegion][iBin], multBins[selectedRegion][iBin+1]),"p");
     }
     legendPtBins->Draw("SAME");
+
+    auto labelMultBins = new TLatex();
+    labelMultBins->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp #sqrt{s} = 5.36 TeV, Monash Tune");
+    labelMultBins->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4");
+    labelMultBins->Draw("SAME");
+
     canvasMuonPtBins->Write();
 
     // profile average per mult bin
@@ -217,26 +275,42 @@ void mymain11Macro_join() {
 
     // self-normalised mult dependence
     TCanvas *canvasYieldMultDep = new TCanvas("yield_mult_dep","yield_mult_dep");
+
     W_muon_norm_yield_mult->SetTitle("Self Normalised Charged Particle Dependence of W_{#mu}");
-    W_muon_norm_yield_mult->GetYaxis()->SetTitle("#frac{d^{2}#sigma}{dp_{T}dy}/<#frac{d^{2}#sigma}{dp_{T}dy}>");
+    W_muon_norm_yield_mult->GetYaxis()->SetTitle("#frac{d^{2}#sigma}{dp_{T}d#eta} / #left<#frac{d^{2}#sigma}{dp_{T}d#eta}#right>");
     W_muon_norm_yield_mult->SetStats(0);
     W_muon_norm_yield_mult->SetLineColor(4);
+    W_muon_norm_yield_mult->SetLineWidth(3);
     W_muon_norm_yield_mult->SetMarkerStyle(8);
     W_muon_norm_yield_mult->SetMarkerColor(4);
+    W_muon_norm_yield_mult->SetMarkerSize(1.7);
+
     // fit straight line
-    TF1* fitLinear = new TF1("fitLinear", "pol1");
-    W_muon_norm_yield_mult->Fit("fitLinear");
+    // TF1* fitLinear = new TF1("fitLinear", "pol1");
+    // W_muon_norm_yield_mult->Fit("fitLinear");
     W_muon_norm_yield_mult->Draw();
+
     // add plot of y=x
     double y[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     double x[8] = {0, 1, 2, 3, 4, 5, 6, 7};
     auto gLine = new TGraph(8, x, y);
+    gLine->SetLineWidth(2);
+    gLine->SetLineStyle(7);
     gLine->Draw("SAME");
+
     auto legendLinear = new TLegend();
     legendLinear->AddEntry(W_muon_norm_yield_mult,"W #rightarrow #mu","p");
-    legendLinear->AddEntry(fitLinear, "Linear Best Fit");
+    //legendLinear->AddEntry(fitLinear, "Linear Best Fit");
     legendLinear->AddEntry(gLine, "y = x", "l");
     legendLinear->Draw("SAME");
+
+    auto labelMultDep = new TLatex();
+    labelMultDep->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp @ #sqrt{s} = 5.36 TeV, Full Monash Tune");
+    //labelMultDep->DrawLatex(0.0, 0.0, "Monash Tune");
+    labelMultDep->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4; 30.0 < p_{T,muon} < 60.0");
+    labelMultDep->DrawLatex(0.0, 0.0, "Forward region (2.5 < #eta_{ch} < 4.0), N_{ch} > 0");
+    labelMultDep->Draw("SAME");
+
     canvasYieldMultDep->Write();
 
     // write muon pt for semileptonic muon cross-section
