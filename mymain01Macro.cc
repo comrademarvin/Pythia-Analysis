@@ -10,13 +10,13 @@ void mymain01Macro() {
     static const double binEdges[nBins+1] = {0.0, 15.0, 30.0, 50.0, 70.0, 100.0, 150.0};
 
     // estimate multiplicity in different regions
-    const int nRegions = 5;
-    const int selectedRegion = 2; // select the desired multiplicity estimation region here
-    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off"};
-    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0};
-    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0};
-    const float region_plot_max[nRegions] = {100.0, 70.0, 90.00, 120.0, 60.0};
-    const int region_plot_bins[nRegions] = {50, 35, 45, 60, 30};
+    const int nRegions = 7;
+    const int selectedRegion = 6; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off", "central_CR_mode_2", "central_MPI_level_0"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0, -1.0, -1.0};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0, 1.0, 1.0};
+    const float region_plot_max[nRegions] = {100.0, 70.0, 90.00, 120.0, 60.0, 100.0, 100.0};
+    const int region_plot_bins[nRegions] = {50, 35, 45, 60, 30, 50, 50};
     const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // multiplicity analysis bins
@@ -26,7 +26,9 @@ void mymain01Macro() {
         {0, 4, 8, 12, 16, 20, 24, 28},
         {0, 4, 8, 12, 16, 20, 24, 28},
         {0, 5, 10, 15, 20, 25, 30, 35},
-        {0, 2, 4, 6, 8, 10, 12, 14}
+        {0, 2, 4, 6, 8, 10, 12, 14},
+        {0, 4, 8, 12, 16, 20, 24, 28},
+        {0, 4, 8, 12, 16, 20, 24, 28}
     };
 
     // pThat multiplicity
@@ -45,7 +47,7 @@ void mymain01Macro() {
     TH1D* multiplicity_events_raw_norm_part = new TH1D("multiplicity_events_raw_norm_part", "", 
                                                         region_plot_bins[selectedRegion]/2, 0, region_plot_max[selectedRegion]/region_eta_width);
 
-    TFile *infile = TFile::Open("mymain01_1M_536_4pi.root", "READ");
+    TFile *infile = TFile::Open("mymain01_1M_536_4pi_MPI_level_0.root", "READ");
 
     TNtuple *genInfo = (TNtuple*)infile->Get("genInfo");
 
@@ -113,7 +115,7 @@ void mymain01Macro() {
     std::cout << "<dN_ch/d_eta> rebinned for input: " << multiplicity_events->GetMean() << std::endl;
 
     // Output file
-    TFile* outFile = new TFile("mymain01Macro_V0C.root", "RECREATE");
+    TFile* outFile = new TFile("mymain01Macro_central_MPI_level_0.root", "RECREATE");
 
     multiplicity_events->Draw();
     multiplicity_events->Write();

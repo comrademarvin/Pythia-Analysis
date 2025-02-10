@@ -59,14 +59,15 @@ void mymain01Macro_compare() {
     mult_raw_central_MPI->Draw("SAME");
 
     auto legendModels = new TLegend();
-    legendModels->AddEntry(mult_raw_central, "Full Monash","p");
+    legendModels->AddEntry(mult_raw_central, "Full Monash Tune","p");
     legendModels->AddEntry(mult_raw_central_CR, "CR off","p");
     legendModels->AddEntry(mult_raw_central_MPI, "MPI off","p");
     legendModels->Draw("SAME");
 
     auto labelModels = new TLatex();
+    labelModels->DrawLatex(0.0, 0.0, "This Work");
     labelModels->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV, Minimum Bias (QCD)");
-    labelModels->DrawLatex(0.0, 0.0, "N_{ch} > 0, |#eta_{ch}| < 1");
+    labelModels->DrawLatex(0.0, 0.0, "N_{ch} > 0, |#eta_{ch}| < 1 (Central)");
     labelModels->Draw("SAME");
 
     canvasMultModels->Write();
@@ -107,7 +108,8 @@ void mymain01Macro_compare() {
     legendRegions->Draw("SAME");
 
     auto labelRegions = new TLatex();
-    labelRegions->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV, Monash Tune");
+    labelRegions->DrawLatex(0.0, 0.0, "This Work");
+    labelRegions->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV, Full Monash Tune");
     labelRegions->DrawLatex(0.0, 0.0, "Minimum Bias (QCD), N_{ch} > 0");
     labelRegions->Draw("SAME");
 

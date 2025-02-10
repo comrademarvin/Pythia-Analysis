@@ -40,12 +40,13 @@ void forward_muon_contributions_macro() {
     W_muon_pt->Draw("SAME");
 
     auto legendMuon = new TLegend();
-    legendMuon->AddEntry(HF_muon_pt,"c,b #rightarrow #mu (Pythia)","p");
+    legendMuon->AddEntry(HF_muon_pt,"c,b #rightarrow #mu (Pythia MB)","p");
     legendMuon->AddEntry(W_muon_pt,"W #rightarrow #mu (Powheg+Pythia)","p");
     legendMuon->Draw("SAME");
 
     auto labelCuts = new TLatex();
-    labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.36 TeV, 2.5 < #eta < 4");
+    labelCuts->DrawLatex(0.0, 0.0, "This Work");
+    labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.36 TeV, 2.5 < #eta_{muon} < 4");
     labelCuts->DrawLatex(0.0, 0.0, "Monash Tune (NNPDF2.3 QCD+QED LO)");
     labelCuts->Draw("SAME");
 

@@ -5,13 +5,13 @@
 
 void mymain11Macro_join() {
     // estimate multiplicity in different regions
-    const int nRegions = 5;
-    const int selectedRegion = 1; // select the desired multiplicity estimation region here
-    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off"};
-    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0};
-    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0};
-    const float region_plot_max[nRegions] = {100.0, 70.0, 90.00, 120.0, 60.0};
-    const int region_plot_bins[nRegions] = {50, 35, 45, 60, 30};
+    const int nRegions = 7;
+    const int selectedRegion = 5; // select the desired multiplicity estimation region here
+    const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off", "central_CR_mode_2", "central_MPI_level_0"};
+    const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0, -1.0, -1.0};
+    const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0, 1.0, 1.0};
+    const float region_plot_max[nRegions] = {100.0, 70.0, 90.00, 120.0, 60.0, 100.0, 100.0};
+    const int region_plot_bins[nRegions] = {50, 35, 45, 60, 30, 50, 50};
     const float region_eta_width = region_eta_max[selectedRegion] - region_eta_min[selectedRegion];
 
     // multiplicity analysis bins
@@ -21,7 +21,9 @@ void mymain11Macro_join() {
         {0, 4, 8, 12, 16, 20, 24, 28},
         {0, 4, 8, 12, 16, 20, 24, 28},
         {0, 5, 10, 15, 20, 25, 30, 35},
-        {0, 2, 4, 6, 8, 10, 12, 14}
+        {0, 2, 4, 6, 8, 10, 12, 14},
+        {0, 4, 8, 12, 16, 20, 24, 28},
+        {0, 4, 8, 12, 16, 20, 24, 28}
     };
 
     // pT-bins for mult dependence
@@ -30,7 +32,7 @@ void mymain11Macro_join() {
     const float pTBinMax = 60.0;
 
     // Access Minimum Bias data
-    TFile* infile_mb = TFile::Open("mymain01Macro_forward.root", "READ");
+    TFile* infile_mb = TFile::Open("mymain01Macro_central_CR_mode_2.root", "READ");
     TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
 
@@ -45,8 +47,8 @@ void mymain11Macro_join() {
     }
 
     // W+/- output files from mymain11Macro_multiplicity
-    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus_forward.root", "READ");
-    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus_forward.root", "READ");
+    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus_central_CR_mode_2.root", "READ");
+    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus_central_CR_mode_2.root", "READ");
 
     // kinematics
     TH1F* W_muon_pt_plus = (TH1F*)infile_W_plus->Get("W_muon_pt");
@@ -75,7 +77,7 @@ void mymain11Macro_join() {
     TH1D* cs_ratio = new TH1D(*cs_ratio_plus);
     cs_ratio->Add(cs_ratio_minus);
 
-    // forward region yield cross-section
+    // central_CR_mode_2 region yield cross-section
     TH1D* W_muon_yield_mult_plus = (TH1D*)infile_W_plus->Get("W_muon_yield_mult");
     TH1D* W_muon_yield_mult_minus = (TH1D*)infile_W_minus->Get("W_muon_yield_mult");
     TH1D* W_muon_yield_mult = new TH1D(*W_muon_yield_mult_plus);
@@ -114,7 +116,7 @@ void mymain11Macro_join() {
     *W_muon_norm_yield_mult = (*W_muon_yield_mult_mb)/(*W_muon_yield_average); // normalise yield by pt average
 
     // plotting
-    TFile* outFile = new TFile("mymain11Hist_joined_forward.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11Hist_joined_central_CR_mode_2.root", "RECREATE");
 
     // kinematics
     TCanvas *canvasMuonPt = new TCanvas("W_muon_pt","W_muon_pt");
@@ -154,11 +156,14 @@ void mymain11Macro_join() {
     legendPt->Draw("SAME");
 
     auto labelCuts = new TLatex();
+    labelCuts->DrawLatex(0.0, 0.0, "This Work");
     labelCuts->DrawLatex(0.0, 0.0, "POWHEG pp @ #sqrt{s} = 5.36 TeV");
     labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4");
     labelCuts->Draw("SAME");
 
     canvasMuonPt->Write();
+
+    std:cout << "Ratio between W+/W- cross-sections: " << (W_muon_pt_plus->Integral(16, 30))/(W_muon_pt_minus->Integral(16, 30)) << std::endl;
 
     // multiplicity
     // full cross-section not normalised multiplicity, display bins
@@ -185,13 +190,15 @@ void mymain11Macro_join() {
     W_muon_mult_raw->Draw("SAME");
 
     auto legendMultRaw = new TLegend();
-    legendMultRaw->AddEntry(mb_mult_raw,"Minimum Bias (|#eta| < 1.0)","p");
+    legendMultRaw->AddEntry(mb_mult_raw,"Minimum Bias (QCD)","p");
     legendMultRaw->AddEntry(W_muon_mult_raw,"W #rightarrow #mu","p");
     legendMultRaw->Draw("SAME");
 
     auto labelMultRaw = new TLatex();
-    labelMultRaw->DrawLatex(0.0, 0.0, "POWHEG+Pythia8 pp @ #sqrt{s} = 5.36 TeV");
+    labelMultRaw->DrawLatex(0.0, 0.0, "This Work");
+    labelMultRaw->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp @ #sqrt{s} = 5.36 TeV");
     labelMultRaw->DrawLatex(0.0, 0.0, "Monash Tune (NNPDF2.3 QCD+QED LO)");
+    labelMultRaw->DrawLatex(0.0, 0.0, "|#eta_{ch}| < 1.0, N_{ch} > 0");
     labelMultRaw->Draw("SAME");
 
     canvasMuonMultRaw->Write();
@@ -218,7 +225,9 @@ void mymain11Macro_join() {
     // cs_ratio_minus->Draw("SAME");
 
     auto labelRatio = new TLatex();
-    labelRatio->DrawLatex(0.0, 0.0, "V0C Region (1.7 < #eta_{ch} < 3.7)");
+    labelRatio->DrawLatex(0.0, 0.0, "This Work");
+    labelRatio->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp @ #sqrt{s} = 5.36 TeV, Full Monash Tune");
+    labelRatio->DrawLatex(0.0, 0.0, "Central Region (|#eta_{ch}| < 1.0), N_{ch} > 0");
     labelRatio->Draw("SAME");
 
     canvasMuonRatio->Write();
@@ -236,6 +245,13 @@ void mymain11Macro_join() {
     W_muon_yield_mult_mb->SetMarkerSize(1.7);
     W_muon_yield_mult_mb->SetStats(0);
     W_muon_yield_mult_mb->Draw("SAME");
+
+    auto labelYieldMB = new TLatex();
+    labelYieldMB->DrawLatex(0.0, 0.0, "This Work");
+    labelYieldMB->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp @ #sqrt{s} = 5.36 TeV, Full Monash Tune");
+    labelYieldMB->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4; 30.0 < p_{T,muon} < 60.0");
+    labelYieldMB->DrawLatex(0.0, 0.0, "Central region (|#eta_{ch}| < 1.0), N_{ch} > 0");
+    labelYieldMB->Draw("SAME");
 
     canvasMuonYield->Write();
 
@@ -257,14 +273,17 @@ void mymain11Macro_join() {
         W_muon_pt_mult_binned[iBin]->SetMarkerColor(lineColors[iBin]);
         W_muon_pt_mult_binned[iBin]->SetMarkerSize(1.5);
         W_muon_pt_mult_binned[iBin]->Draw("SAME");
-        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%.1f <= N_{ch} < %.1f", multBins[selectedRegion][iBin], multBins[selectedRegion][iBin+1]),"p");
+        legendPtBins->AddEntry(W_muon_pt_mult_binned[iBin], Form("%.1f <= dN_{ch}/d#eta < %.1f", multBins[selectedRegion][iBin], multBins[selectedRegion][iBin+1]),"p");
     }
+
     legendPtBins->Draw("SAME");
 
-    auto labelMultBins = new TLatex();
-    labelMultBins->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp #sqrt{s} = 5.36 TeV, Monash Tune");
-    labelMultBins->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4");
-    labelMultBins->Draw("SAME");
+    auto labelPtMultBins = new TLatex();
+    labelPtMultBins->DrawLatexNDC(0.2, 0.4, "This Work");
+    labelPtMultBins->DrawLatexNDC(0.2, 0.4, "POWHEG+Pythia pp @ #sqrt{s} = 5.36 TeV, Monash");
+    labelPtMultBins->DrawLatexNDC(0.2, 0.4, "2.5 < #eta_{muon} < 4; 30.0 < p_{T,muon} < 60.0");
+    labelPtMultBins->DrawLatexNDC(0.2, 0.4, "Central region (|#eta_{ch}| < 1.0), N_{ch} > 0");
+    //labelPtMultBins->Draw("SAME");
 
     canvasMuonPtBins->Write();
 
@@ -286,8 +305,8 @@ void mymain11Macro_join() {
     W_muon_norm_yield_mult->SetMarkerSize(1.7);
 
     // fit straight line
-    // TF1* fitLinear = new TF1("fitLinear", "pol1");
-    // W_muon_norm_yield_mult->Fit("fitLinear");
+    TF1* fitLinear = new TF1("fitLinear", "pol1");
+    W_muon_norm_yield_mult->Fit("fitLinear");
     W_muon_norm_yield_mult->Draw();
 
     // add plot of y=x
@@ -300,15 +319,16 @@ void mymain11Macro_join() {
 
     auto legendLinear = new TLegend();
     legendLinear->AddEntry(W_muon_norm_yield_mult,"W #rightarrow #mu","p");
-    //legendLinear->AddEntry(fitLinear, "Linear Best Fit");
+    legendLinear->AddEntry(fitLinear, "Linear Best Fit");
     legendLinear->AddEntry(gLine, "y = x", "l");
     legendLinear->Draw("SAME");
 
     auto labelMultDep = new TLatex();
-    labelMultDep->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp @ #sqrt{s} = 5.36 TeV, Full Monash Tune");
-    //labelMultDep->DrawLatex(0.0, 0.0, "Monash Tune");
+    labelMultDep->DrawLatex(0.0, 0.0, "This Work");
+    labelMultDep->DrawLatex(0.0, 0.0, "POWHEG+Pythia pp @ #sqrt{s} = 5.36 TeV");
+    labelMultDep->DrawLatex(0.0, 0.0, "Monash Tune, CR:mode=2 (Gluon Move)");
     labelMultDep->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4; 30.0 < p_{T,muon} < 60.0");
-    labelMultDep->DrawLatex(0.0, 0.0, "Forward region (2.5 < #eta_{ch} < 4.0), N_{ch} > 0");
+    labelMultDep->DrawLatex(0.0, 0.0, "Central region (|#eta_{ch}| < 1.0), N_{ch} > 0");
     labelMultDep->Draw("SAME");
 
     canvasYieldMultDep->Write();

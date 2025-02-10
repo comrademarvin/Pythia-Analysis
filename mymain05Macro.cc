@@ -91,7 +91,8 @@ void mymain05Macro() {
     total_cs_pt_hat->Draw("SAME");
 
     auto labelPtHat = new TLatex();
-    labelPtHat->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV, Monash Tune");
+    labelPtHat->DrawLatex(0.0, 0.0, "This Work");
+    labelPtHat->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV, Full Monash Tune");
     labelPtHat->DrawLatex(0.0, 0.0, "Minimum Bias (QCD)");
     labelPtHat->Draw("SAME");
 

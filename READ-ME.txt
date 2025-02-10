@@ -4,7 +4,7 @@ mymain01:
     mymain01Macro: rebinning and formatting for multiplicity analysis input and plotting
     TODO - mymain01Macro_mult_regions: show multiplicity distributions for different regions of detector.
 
-    mymain01Macro_compare:
+    mymain01Macro_compare: Compares minimum-bias multiplicity distributions estimated in different region, and using different model parameters. 
 
 mymain02:
     First attempt of HF->mu cross-section. DEPRECATED - should be removed.

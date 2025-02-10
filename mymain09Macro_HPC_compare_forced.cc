@@ -20,7 +20,7 @@ void mymain09Macro_HPC_compare_forced() {
     vector<TH1F*> muonPtContribs(nBins);
 
     for(int iBin = 0; iBin < nBins; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_502_tune14/mymain09_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("mymain09_HPC_root_20M_502_tune2/mymain09_%d.root", iBin), "READ");
 
         std::vector<double> *genInfoNorm;
         infile->GetObject("genInfoNorm", genInfoNorm);
@@ -81,7 +81,7 @@ void mymain09Macro_HPC_compare_forced() {
     };
 
     // Output file
-    TFile* outFile = new TFile("mymain09Hist_HPC_compare_forced_20M_502.root", "RECREATE");
+    TFile* outFile = new TFile("mymain09Hist_HPC_compare_forced_20M_502_tune2.root", "RECREATE");
 
     // Contribution to HF->mu from each pT-hat bin
     int lineColours[nBins] = {1,2,3,4,6,8,9};
@@ -104,8 +104,9 @@ void mymain09Macro_HPC_compare_forced() {
     legendContrib->Draw("SAME");
 
     auto labelContrib = new TLatex();
-    labelContrib->DrawLatex(0.0, 0.0, "Pythia8 pp #sqrt{s} = 5.02 TeV, Monash Tune");
-    labelContrib->DrawLatex(0.0, 0.0, "2.5 < #eta < 4, 2 < p_{T} < 20");
+    labelContrib->DrawLatex(0.0, 0.0, "This Work");
+    labelContrib->DrawLatex(0.0, 0.0, "Pythia8 pp #sqrt{s} = 5.02 TeV, Full Monash Tune");
+    labelContrib->DrawLatex(0.0, 0.0, "Minimum Bias (QCD), 2.5 < #eta_{#mu} < 4");
     labelContrib->Draw("SAME");
 
     canvasMuonPtContrib->Write();
@@ -144,11 +145,12 @@ void mymain09Macro_HPC_compare_forced() {
     // //muonFONLL->Draw("SAME");
 
     auto legendMuon = new TLegend();
-    legendMuon->AddEntry(muonPtCompare,"Pythia8 (Monash Tune)","p");
+    legendMuon->AddEntry(muonPtCompare,"Pythia8 (Tune 1)","p");
     legendMuon->AddEntry(pub_data_hist,"ALICE Data","p");
     legendMuon->Draw("SAME");
 
     auto labelCuts = new TLatex();
+    labelCuts->DrawLatex(0.0, 0.0, "This Work");
     labelCuts->DrawLatex(0.0, 0.0, "pp #sqrt{s} = 5.02 TeV");
     labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta < 4, 2 < p_{T} < 20");
     labelCuts->Draw("SAME");

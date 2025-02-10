@@ -72,6 +72,13 @@ void mymain04Macro() {
     legend->AddEntry(hardQCDpTHat,"HardQCD:all","p");
     legend->AddEntry(softQCDpTHat,"SoftQCD:nonDiffractive","p");
     legend->Draw("SAME");
+
+    auto labelCuts = new TLatex();
+    labelCuts->DrawLatex(0.0, 0.0, "This Work");
+    labelCuts->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 13.6 TeV");
+    labelCuts->DrawLatex(0.0, 0.0, "Full Monash Tune");
+    labelCuts->Draw("SAME");
+
     canvasPtHat->Write();
 
     delete outFile;

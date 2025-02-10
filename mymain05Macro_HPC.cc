@@ -12,7 +12,7 @@ void mymain05Macro_HPC() {
     // Output histograms
     int N_bins_muon_pt = 20;
     float lowerPt = 0.0;
-    float upperPt = 20.0;
+    float upperPt = 40.0;
     const unsigned int N_cont = 8;
     const string contrib[N_cont] = {"total", "lepton", "boson", "light meson", "charm meson", "bottom meson", "charmonium", "baryon"};
     const unsigned int contrib_lower_pdg[N_cont] = {0, 10, 20, 110, 410, 510, 440, 1110};
@@ -20,12 +20,12 @@ void mymain05Macro_HPC() {
 
     vector<TH1F*> muonPt(N_cont);
     for (int iCont = 0; iCont < N_cont; iCont++) {
-        muonPt[iCont] = new TH1F(Form("muon_pt_%d", iCont),"Contributions to Forward Muon Production;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (mb/GeV/c)", N_bins_muon_pt, lowerPt, upperPt);
+        muonPt[iCont] = new TH1F(Form("muon_pt_%d", iCont),"Contributions to Forward Muon Production;p_{T} (GeV/c);#frac{d#sigma}{dp_{T}} (pb/GeV/c)", N_bins_muon_pt, lowerPt, upperPt);
     }
 
     // read in root output per pT-hat bin
     for(int iBin = 0; iBin < nBins; iBin++) {
-        TFile *infile = TFile::Open(Form("mymain05_HPC_root_1M_536/mymain05_%d.root", iBin), "READ");
+        TFile *infile = TFile::Open(Form("mymain05_HPC_root_50M_536/mymain05_%d.root", iBin), "READ");
 
         std::vector<double> *genInfoNorm;
         infile->GetObject("genInfoNorm", genInfoNorm);
@@ -42,7 +42,7 @@ void mymain05Macro_HPC() {
 
         // normalise
         for (int iCont = 0; iCont < N_cont; iCont++) {
-            muonPtPart[iCont]->Scale((*genInfoNorm)[iBin], "width");
+            muonPtPart[iCont]->Scale(((*genInfoNorm)[iBin])*pow(10,9), "width");
             muonPt[iCont]->Add(muonPtPart[iCont]);
         }
     };
@@ -57,9 +57,9 @@ void mymain05Macro_HPC() {
     gPad->SetLogy();
     auto legend = new TLegend();
     for (int iCont = 0; iCont < N_cont; iCont++) {
-        muonPt[iCont]->GetYaxis()->SetTitle("#frac{d#sigma_{X#rightarrow#mu}}{dp_{T}} (mb/GeV/c)");
-        muonPt[iCont]->SetMaximum(0);
-        muonPt[iCont]->SetMinimum(0.0000000001);
+        muonPt[iCont]->GetYaxis()->SetTitle("#frac{d#sigma_{X#rightarrow#mu}}{dp_{T}} (pb/GeV/c)");
+        muonPt[iCont]->SetMaximum(1000000000);
+        muonPt[iCont]->SetMinimum(0.001);
         muonPt[iCont]->SetStats(0);
         muonPt[iCont]->SetLineColor(lineColours[iCont]);
         muonPt[iCont]->SetLineWidth(3);
@@ -72,9 +72,9 @@ void mymain05Macro_HPC() {
     legend->Draw("SAME");
 
     auto labelCuts = new TLatex();
-    labelCuts->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV");
-    labelCuts->DrawLatex(0.0, 0.0, "Monash Tune, Minimum Bias (QCD)");
-    labelCuts->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4");
+    labelCuts->DrawLatex(0.0, 0.0, "This Work");
+    labelCuts->DrawLatex(0.0, 0.0, "Pythia8 pp @ #sqrt{s} = 5.36 TeV, Full Monash Tune");
+    labelCuts->DrawLatex(0.0, 0.0, "Minimum Bias (QCD), 2.5 < #eta_{muon} < 4");
     labelCuts->Draw("SAME");
 
     canvasPt->Write();

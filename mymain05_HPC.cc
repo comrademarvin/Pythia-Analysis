@@ -18,13 +18,13 @@ int main(int argc, char *argv[]) {
     PythiaParallel pythia; // generate events in parallel
 
     // ROOT file for histograms
-    TFile* outFile = new TFile(Form("mymain05_HPC_root_20M_536/mymain05_%d.root", iBin), "RECREATE");
+    TFile* outFile = new TFile(Form("mymain05_HPC_root_50M_536/mymain05_%d.root", iBin), "RECREATE");
 
     // Turn SoftQCD on/off
     bool softQCD = true;
 
     // scale number of events per pT-hat bin
-    int N_events = 20000000;
+    int N_events = 50000000;
     if (softQCD && iBin == 0) {
         N_events = 3*N_events;
     } else if (iBin == 1) {
