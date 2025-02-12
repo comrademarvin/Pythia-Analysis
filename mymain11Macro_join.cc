@@ -6,7 +6,7 @@
 void mymain11Macro_join() {
     // estimate multiplicity in different regions
     const int nRegions = 7;
-    const int selectedRegion = 5; // select the desired multiplicity estimation region here
+    const int selectedRegion = 0; // select the desired multiplicity estimation region here
     const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off", "central_CR_mode_2", "central_MPI_level_0"};
     const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0, -1.0, -1.0};
     const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0, 1.0, 1.0};
@@ -32,7 +32,7 @@ void mymain11Macro_join() {
     const float pTBinMax = 60.0;
 
     // Access Minimum Bias data
-    TFile* infile_mb = TFile::Open("mymain01Macro_central_CR_mode_2.root", "READ");
+    TFile* infile_mb = TFile::Open("mymain01Macro_central.root", "READ");
     TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
 
@@ -47,8 +47,8 @@ void mymain11Macro_join() {
     }
 
     // W+/- output files from mymain11Macro_multiplicity
-    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus_central_CR_mode_2.root", "READ");
-    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus_central_CR_mode_2.root", "READ");
+    TFile *infile_W_plus = TFile::Open("mymain11Hist_mult_join_plus_central.root", "READ");
+    TFile *infile_W_minus = TFile::Open("mymain11Hist_mult_join_minus_central.root", "READ");
 
     // kinematics
     TH1F* W_muon_pt_plus = (TH1F*)infile_W_plus->Get("W_muon_pt");
@@ -57,6 +57,13 @@ void mymain11Macro_join() {
     W_muon_pt_minus->Scale(pow(10,9));
     TH1F* W_muon_pt = new TH1F(*W_muon_pt_plus);
     W_muon_pt->Add(W_muon_pt_minus);
+
+    TH1F* W_muon_y_plus = (TH1F*)infile_W_plus->Get("W_muon_y");
+    W_muon_y_plus->Scale(pow(10,9));
+    TH1F* W_muon_y_minus = (TH1F*)infile_W_minus->Get("W_muon_y");
+    W_muon_y_minus->Scale(pow(10,9));
+    TH1F* W_muon_y = new TH1F(*W_muon_y_plus);
+    W_muon_y->Add(W_muon_y_minus);
 
     // multiplicity
     // full cross-section not normalised multiplicity, display bins
@@ -77,7 +84,7 @@ void mymain11Macro_join() {
     TH1D* cs_ratio = new TH1D(*cs_ratio_plus);
     cs_ratio->Add(cs_ratio_minus);
 
-    // central_CR_mode_2 region yield cross-section
+    // central region yield cross-section
     TH1D* W_muon_yield_mult_plus = (TH1D*)infile_W_plus->Get("W_muon_yield_mult");
     TH1D* W_muon_yield_mult_minus = (TH1D*)infile_W_minus->Get("W_muon_yield_mult");
     TH1D* W_muon_yield_mult = new TH1D(*W_muon_yield_mult_plus);
@@ -116,7 +123,7 @@ void mymain11Macro_join() {
     *W_muon_norm_yield_mult = (*W_muon_yield_mult_mb)/(*W_muon_yield_average); // normalise yield by pt average
 
     // plotting
-    TFile* outFile = new TFile("mymain11Hist_joined_central_CR_mode_2.root", "RECREATE");
+    TFile* outFile = new TFile("mymain11Hist_joined_central.root", "RECREATE");
 
     // kinematics
     TCanvas *canvasMuonPt = new TCanvas("W_muon_pt","W_muon_pt");
@@ -163,7 +170,67 @@ void mymain11Macro_join() {
 
     canvasMuonPt->Write();
 
-    std:cout << "Ratio between W+/W- cross-sections: " << (W_muon_pt_plus->Integral(16, 30))/(W_muon_pt_minus->Integral(16, 30)) << std::endl;
+    std::cout << "Ratio between W+/W- cross-sections (Forward y region): " << (W_muon_pt_plus->Integral(1, 60))/(W_muon_pt_minus->Integral(1, 60)) << std::endl;
+
+    // rapidity
+    TCanvas *canvasMuonY = new TCanvas("W_muon_y","W_muon_y");
+    //gPad->SetLogy();
+
+    W_muon_y->SetTitle("Vector Boson Muon Decay rapidity-differential Cross-Section;rapidity;#frac{d#sigma_{#mu}}{dy} (pb/GeV/c)");
+    // W_muon_y->SetMaximum(100);
+    // W_muon_y->SetMinimum(0.01);
+    W_muon_y->SetLineColor(1);
+    W_muon_y->SetLineWidth(3);
+    W_muon_y->SetMarkerStyle(20);
+    W_muon_y->SetMarkerColor(1);
+    W_muon_y->SetMarkerSize(1.7);
+    W_muon_y->SetStats(0);
+    W_muon_y->Draw("SAME");
+
+    W_muon_y_plus->SetLineColor(3);
+    W_muon_y_plus->SetLineWidth(3);
+    W_muon_y_plus->SetMarkerStyle(21);
+    W_muon_y_plus->SetMarkerColor(3);
+    W_muon_y_plus->SetMarkerSize(1.7);
+    W_muon_y_plus->SetStats(0);
+    W_muon_y_plus->Draw("SAME");
+
+    W_muon_y_minus->SetLineColor(4);
+    W_muon_y_minus->SetLineWidth(3);
+    W_muon_y_minus->SetMarkerStyle(22);
+    W_muon_y_minus->SetMarkerColor(4);
+    W_muon_y_minus->SetMarkerSize(1.7);
+    W_muon_y_minus->SetStats(0);
+    W_muon_y_minus->Draw("SAME");
+
+    TLine *lower_line= new TLine(2.5,0,2.5,1200); //declare the vertical line
+    lower_line->SetLineColor(kRed);
+    lower_line->SetLineWidth(3);
+    lower_line->SetLineStyle(kDashed);
+    lower_line->Draw("same");
+
+    TLine *upper_line= new TLine(4.0,0,4.0,1200); //declare the vertical line
+    upper_line->SetLineColor(kRed);
+    upper_line->SetLineWidth(3);
+    upper_line->SetLineStyle(kDashed);
+    upper_line->Draw("same");
+
+    auto legendY = new TLegend();
+    legendY->AddEntry(W_muon_y,"W #rightarrow #mu","p");
+    legendY->AddEntry(W_muon_y_plus,"W^{+} #rightarrow #mu^{+}","p");
+    legendY->AddEntry(W_muon_y_minus,"W^{-} #rightarrow #mu^{-}","p");
+    legendY->AddEntry(lower_line,"Foward Region","l");
+    legendY->Draw("SAME");
+
+    auto labelCutsY = new TLatex();
+    labelCutsY->DrawLatex(0.0, 0.0, "This Work");
+    labelCutsY->DrawLatex(0.0, 0.0, "POWHEG pp @ #sqrt{s} = 5.36 TeV");
+    //labelCutsY->DrawLatex(0.0, 0.0, "2.5 < #eta_{muon} < 4");
+    labelCutsY->Draw("SAME");
+
+    canvasMuonY->Write();
+
+    std::cout << "Ratio between W+/W- cross-sections (Full y region): " << (W_muon_y_plus->Integral(1, 120))/(W_muon_y_minus->Integral(1, 120)) << std::endl;
 
     // multiplicity
     // full cross-section not normalised multiplicity, display bins

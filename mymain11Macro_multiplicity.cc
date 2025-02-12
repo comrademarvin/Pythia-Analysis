@@ -10,7 +10,7 @@
 void mymain11Macro_multiplicity() {
     // estimate multiplicity in different regions
     const int nRegions = 7;
-    const int selectedRegion = 6; // select the desired multiplicity estimation region here
+    const int selectedRegion = 0; // select the desired multiplicity estimation region here
     const string region_label[nRegions] = {"central", "forward", "V0C", "central_CR_off", "central_MPI_off", "central_CR_mode_2", "central_MPI_level_0"};
     const float region_eta_min[nRegions] = {-1.0, 2.5, 1.7, -1.0, -1.0, -1.0, -1.0};
     const float region_eta_max[nRegions] = {1.0, 4.0, 3.7, 1.0, 1.0, 1.0, 1.0};
@@ -36,7 +36,7 @@ void mymain11Macro_multiplicity() {
     const float pTBinMax = 60.0;
 
     // Access Minimum Bias data
-    TFile* infile_mb = TFile::Open("mymain01Macro_central_MPI_level_0.root", "READ");
+    TFile* infile_mb = TFile::Open("mymain01Macro_central.root", "READ");
     TH1D* mb_mult = (TH1D*) infile_mb->Get("multiplicity_events");
     TH1D* mb_mult_raw = (TH1D*) infile_mb->Get("multiplicity_events_raw");
     //TH1D* mb_mult_raw_norm = (TH1D*) infile_mb->Get("mult_raw_norm");
@@ -49,11 +49,12 @@ void mymain11Macro_multiplicity() {
     } 
 
     // Access W+/- showered data
-    TFile* infile = TFile::Open("mymain11_W-_10M_central_MPI_level_0.root", "READ");
+    TFile* infile = TFile::Open("mymain11_W+_10M_central.root", "READ");
 
     // W->muon distributions (pt+y, event multiplicities, multiplicity bins, yield)
     TH1F* W_muon_pt = new TH1F("W_muon_pt", "", 40, 0, 80);
-    TH2F* W_muon_pt_y = new TH2F("W_muon_pt_y", "W->Muon parameter space for p_{T} and rapidity;p_{T} (GeV/c);y;#sigma_{W->#mu} (mb)", 100, 0, 200, 100, -10, 10);
+    TH1F* W_muon_y = new TH1F("W_muon_y", "W->Muon parameter space for rapidity;y;#sigma (mb)", 120, -6, 6);
+    TH1F* W_muon_eta = new TH1F("W_muon_eta", "W->Muon parameter space for pseudorapidity;#eta;#sigma (mb)", 120, -6, 6);
     TH1D* W_muon_mult_raw = new TH1D("W_muon_mult_raw", "Primary charged particle dependence;N_{ch};#sigma_{W->#mu} (mb)", 
                                         region_plot_bins[selectedRegion], 0, region_plot_max[selectedRegion]);
     TH1D* W_muon_multiplicity = new TH1D("W_muon_multiplicity", "Primary charged particle dependence;dN_{ch}/d#eta_{|#eta|<1};#sigma_{W->#mu} (mb)", 
@@ -88,7 +89,8 @@ void mymain11Macro_multiplicity() {
 
     for (int iMuon = 0; iMuon < muons_count; iMuon++) {
         muonTuple->GetEntry(iMuon);
-        W_muon_pt_y->Fill(pt, rapidity);
+        W_muon_y->Fill(rapidity);
+        W_muon_eta->Fill(eta);
         int muon_event_mult = (*event_mult)[static_cast<int>(eventIndex)];
         double muon_event_mult_norm = muon_event_mult/region_eta_width;
         W_muon_mult_raw->Fill(muon_event_mult);
@@ -116,7 +118,8 @@ void mymain11Macro_multiplicity() {
     W_muon_mult_raw->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_multiplicity->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_pt->Scale((*genInfo)[1]/(*genInfo)[0], "width");
-    W_muon_pt_y->Scale((*genInfo)[1]/(*genInfo)[0], "width");
+    W_muon_y->Scale((*genInfo)[1]/(*genInfo)[0], "width");
+    W_muon_eta->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_yield_mult->Scale((*genInfo)[1]/(*genInfo)[0], "width");
     W_muon_yield_mult->Scale(1/(pTBinMax-pTBinMin)); // normalise by integration width
 
@@ -160,8 +163,8 @@ void mymain11Macro_multiplicity() {
     // Output file
     TFile* outFile = new TFile("mymain11Hist_multiplicity.root", "RECREATE");
 
-    TCanvas *canvasMuonPtY = new TCanvas("Muon_pt_y","Muon_pt_y");
-    W_muon_pt_y->Draw("colz");
+    TCanvas *canvasMuonPtY = new TCanvas("Muon_y","Muon_y");
+    W_muon_y->Draw();
     canvasMuonPtY->Write();
 
     TCanvas *canvasMuonMult = new TCanvas("Muon_mult","Muon_mult");
@@ -242,10 +245,12 @@ void mymain11Macro_multiplicity() {
     delete outFile;
 
     // save histograms to join W+/- analysis
-    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_minus_central_MPI_level_0.root", "RECREATE");
+    TFile* outFileJoin = new TFile("mymain11Hist_mult_join_plus_central.root", "RECREATE");
 
     // kinematics
     W_muon_pt->Write();
+    W_muon_y->Write();
+    W_muon_eta->Write();
 
     // multiplicity dependence
     W_muon_mult_raw->Write("W_muon_mult_raw");
